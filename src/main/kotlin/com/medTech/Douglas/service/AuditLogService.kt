@@ -7,10 +7,23 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
+import java.time.LocalDateTime
+
 @Service
 class AuditLogService(
     private val auditLogRepository: AuditLogRepository
 ) {
+
+    @Transactional(readOnly = true)
+    fun search(
+        action: String?,
+        resource: String?,
+        userEmail: String?,
+        startDate: LocalDateTime?,
+        endDate: LocalDateTime?
+    ): List<AuditLog> {
+        return auditLogRepository.search(action, resource, userEmail, startDate, endDate)
+    }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun log(action: String, resource: String, resourceId: String?, details: String?) {

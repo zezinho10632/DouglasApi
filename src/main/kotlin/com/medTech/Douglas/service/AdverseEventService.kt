@@ -40,8 +40,8 @@ class AdverseEventService(
     }
 
     @Transactional(readOnly = true)
-    fun listByPeriod(periodId: UUID): List<AdverseEventResponse> {
-        val events = repository.findByPeriodId(periodId)
+    fun listByPeriod(periodId: UUID, eventType: EventType? = null): List<AdverseEventResponse> {
+        val events = repository.search(periodId, eventType)
         val userIds = events.mapNotNull { it.createdBy }.distinct()
         val users = userRepository.findAllById(userIds).associateBy { it.id }
         

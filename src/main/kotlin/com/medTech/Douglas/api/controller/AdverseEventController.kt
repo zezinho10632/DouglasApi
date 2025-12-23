@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 import java.util.UUID
 
+import com.medTech.Douglas.domain.enums.EventType
+
 @RestController
 @RequestMapping("/api/v1/adverse-events")
 @Tag(name = "Eventos Adversos", description = "APIs de Gestão de Eventos Adversos")
@@ -60,10 +62,13 @@ class AdverseEventController(
     }
 
     @GetMapping("/period/{periodId}")
-    @Operation(summary = "Listar eventos adversos por período")
+    @Operation(summary = "Listar eventos adversos por período com filtros opcionais")
     @PreAuthorize("hasRole('ADMIN')")
-    fun listByPeriod(@PathVariable periodId: UUID): ResponseEntity<ApiResponse<List<AdverseEventResponse>>> {
-        val response = adverseEventService.listByPeriod(periodId)
+    fun listByPeriod(
+        @PathVariable periodId: UUID,
+        @RequestParam(required = false) eventType: EventType?
+    ): ResponseEntity<ApiResponse<List<AdverseEventResponse>>> {
+        val response = adverseEventService.listByPeriod(periodId, eventType)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 

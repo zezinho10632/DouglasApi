@@ -64,8 +64,8 @@ class PeriodService(
     }
 
     @Transactional(readOnly = true)
-    fun listBySector(sectorId: UUID): List<PeriodResponse> {
-        return repository.findBySectorId(sectorId)
+    fun listBySector(sectorId: UUID, status: PeriodStatus? = null, year: Int? = null): List<PeriodResponse> {
+        return repository.search(sectorId, status, year)
             .map { mapper.toResponse(it) }
     }
 }

@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
+import com.medTech.Douglas.domain.enums.PeriodStatus
+
 @RestController
 @RequestMapping("/api/v1/periods")
 @Tag(name = "Períodos", description = "APIs de Gestão de Períodos")
@@ -41,9 +43,13 @@ class PeriodController(
     }
 
     @GetMapping
-    @Operation(summary = "Listar períodos por setor")
-    fun listBySector(@RequestParam sectorId: UUID): ResponseEntity<ApiResponse<List<PeriodResponse>>> {
-        val response = periodService.listBySector(sectorId)
+    @Operation(summary = "Listar períodos por setor com filtros opcionais")
+    fun listBySector(
+        @RequestParam sectorId: UUID,
+        @RequestParam(required = false) status: PeriodStatus?,
+        @RequestParam(required = false) year: Int?
+    ): ResponseEntity<ApiResponse<List<PeriodResponse>>> {
+        val response = periodService.listBySector(sectorId, status, year)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 }

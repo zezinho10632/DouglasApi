@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
+import com.medTech.Douglas.domain.enums.NotificationClassification
+
 @Service
 class NotificationService(
     private val repository: NotificationRepository,
@@ -39,8 +41,8 @@ class NotificationService(
     }
 
     @Transactional(readOnly = true)
-    fun listByPeriod(periodId: UUID): List<NotificationResponse> {
-        val notifications = repository.findByPeriodId(periodId)
+    fun listByPeriod(periodId: UUID, classification: NotificationClassification? = null, category: String? = null): List<NotificationResponse> {
+        val notifications = repository.search(periodId, classification, category)
         val userIds = notifications.mapNotNull { it.createdBy }.distinct()
         val users = userRepository.findAllById(userIds).associateBy { it.id }
         

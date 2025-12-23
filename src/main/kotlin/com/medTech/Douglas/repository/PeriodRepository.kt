@@ -3,6 +3,7 @@ package com.medTech.Douglas.repository
 import com.medTech.Douglas.domain.entity.Period
 import com.medTech.Douglas.domain.enums.PeriodStatus
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.util.Optional
 import java.util.UUID
@@ -14,8 +15,9 @@ interface PeriodRepository : JpaRepository<Period, UUID> {
     fun existsBySectorIdAndMonthAndYear(sectorId: UUID, month: Int, year: Int): Boolean
     fun findBySectorIdAndStatus(sectorId: UUID, status: PeriodStatus): Optional<Period>
     
-    // Custom query to find periods within a date range logic would be complex with just month/year fields
-    // Simplest approach: fetch all by sector and filter in memory, or add @Query if needed.
-    // Given the scale, fetching all by sector is acceptable for now, but let's add ordering.
-    fun findBySectorIdOrderByYearDescMonthDesc(sectorId: UUID): List<Period>
+    @Query("SELECT p FROM Period p WHERE p.sectorId = :sectorId " +
+           "AND (cast(:status as text) IS NULL OR p.status = :status) " +
+           "AND (cast(:year as integer) IS NULL OR p.year = :year) " +
+           "ORDER BY p.year DESC, p.month DESC")
+    fun search(sectorId: UUID, status: PeriodStatus?, year: Int?): List<Period>
 }

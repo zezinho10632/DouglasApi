@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 import java.util.UUID
 
+import com.medTech.Douglas.domain.enums.NotificationClassification
+
 @RestController
 @RequestMapping("/api/v1/notifications")
 @Tag(name = "Notificações", description = "APIs de Gestão de Notificações")
@@ -59,10 +61,14 @@ class NotificationController(
     }
 
     @GetMapping
-    @Operation(summary = "Listar notificações por período")
+    @Operation(summary = "Listar notificações por período com filtros opcionais")
     @PreAuthorize("hasRole('ADMIN')")
-    fun listByPeriod(@RequestParam periodId: UUID): ResponseEntity<ApiResponse<List<NotificationResponse>>> {
-        val response = notificationService.listByPeriod(periodId)
+    fun listByPeriod(
+        @RequestParam periodId: UUID,
+        @RequestParam(required = false) classification: NotificationClassification?,
+        @RequestParam(required = false) category: String?
+    ): ResponseEntity<ApiResponse<List<NotificationResponse>>> {
+        val response = notificationService.listByPeriod(periodId, classification, category)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 

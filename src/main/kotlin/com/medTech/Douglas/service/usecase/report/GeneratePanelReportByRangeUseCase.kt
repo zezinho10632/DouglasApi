@@ -20,7 +20,7 @@ class GeneratePanelReportByRangeUseCase(
         endDate: LocalDate
     ): List<CompletePanelReportResponse> {
         // Fetch all periods for the sector
-        val allPeriods = periodRepository.findBySectorIdOrderByYearDescMonthDesc(sectorId)
+        val allPeriods = periodRepository.search(sectorId, null, null)
 
         // Filter periods that fall within the range
         // A period is defined by month/year. We construct a LocalDate for the 1st of that month to compare.

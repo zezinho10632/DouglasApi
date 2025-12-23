@@ -1,0 +1,221 @@
+GUIA DE INTEGRAÇÃO FRONTEND - CRUD DE EVENTOS ADVERSOS E NOTIFICAÇÕES
+
+Este guia descreve os endpoints, métodos HTTP e estruturas JSON necessários para implementar o gerenciamento completo (CRUD) de Eventos Adversos e Notificações.
+
+================================================================================
+1. EVENTOS ADVERSOS (Adverse Events)
+================================================================================
+Base URL: /api/v1/adverse-events
+
+--------------------------------------------------------------------------------
+1.1. CRIAR EVENTO ADVERSO
+Método: POST
+Endpoint: /api/v1/adverse-events
+
+Body (Request JSON):
+{
+  "periodId": "uuid-do-periodo",
+  "sectorId": "uuid-do-setor",
+  "eventDate": "2024-03-20",
+  "eventType": "FALL", 
+  "description": "Paciente escorregou ao tentar levantar da cama sem auxílio."
+}
+
+Valores possíveis para 'eventType':
+- PRESSURE_INJURY (Lesão por Pressão)
+- CVC_LOSS (Perda de CVC)
+- ENTERAL_TUBE (Sonda Enteral)
+- CARDIORESPIRATORY_ARREST (Parada Cardiorrespiratória)
+- FALL (Queda)
+- ACCIDENTAL_EXTUBATION (Extubação Acidental)
+
+Retorno (Response JSON - 201 Created):
+{
+  "success": true,
+  "message": "Evento adverso registrado com sucesso",
+  "data": {
+    "id": "uuid-gerado",
+    "periodId": "uuid-do-periodo",
+    "sectorId": "uuid-do-setor",
+    "eventDate": "2024-03-20",
+    "eventType": "FALL",
+    "description": "Paciente escorregou...",
+    "createdByName": "Nome do Usuário",
+    "createdByJobTitle": "NURSE",
+    "createdAt": "2024-03-20T10:00:00",
+    "updatedAt": "2024-03-20T10:00:00"
+  }
+}
+
+--------------------------------------------------------------------------------
+1.2. ATUALIZAR EVENTO ADVERSO
+Método: PUT
+Endpoint: /api/v1/adverse-events/{id}
+
+Body (Request JSON):
+{
+  "eventDate": "2024-03-21",
+  "eventType": "FALL",
+  "description": "Descrição atualizada do evento."
+}
+
+Retorno (Response JSON - 200 OK):
+{
+  "success": true,
+  "message": "Evento adverso atualizado com sucesso",
+  "data": { ...objeto atualizado... }
+}
+
+--------------------------------------------------------------------------------
+1.3. BUSCAR EVENTO POR ID (Detalhes para Edição)
+Método: GET
+Endpoint: /api/v1/adverse-events/{id}
+
+Retorno (Response JSON - 200 OK):
+{
+  "success": true,
+  "data": {
+    "id": "uuid-do-evento",
+    "periodId": "uuid-do-periodo",
+    "sectorId": "uuid-do-setor",
+    "eventDate": "2024-03-20",
+    "eventType": "FALL",
+    "description": "Descrição...",
+    ...outros campos...
+  }
+}
+
+--------------------------------------------------------------------------------
+1.4. LISTAR EVENTOS POR PERÍODO (Para Tabela/Lista)
+Método: GET
+Endpoint: /api/v1/adverse-events/period/{periodId}
+
+Retorno (Response JSON - 200 OK):
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid-1",
+      "eventType": "FALL",
+      "eventDate": "2024-03-20",
+      ...
+    },
+    {
+      "id": "uuid-2",
+      "eventType": "PRESSURE_INJURY",
+      "eventDate": "2024-03-19",
+      ...
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+1.5. EXCLUIR EVENTO ADVERSO
+Método: DELETE
+Endpoint: /api/v1/adverse-events/{id}
+
+Retorno (Response JSON - 200 OK):
+{
+  "success": true,
+  "message": "Evento adverso excluído com sucesso",
+  "data": null
+}
+
+================================================================================
+2. NOTIFICAÇÕES (Notifications)
+================================================================================
+Base URL: /api/v1/notifications
+
+--------------------------------------------------------------------------------
+2.1. CRIAR NOTIFICAÇÃO
+Método: POST
+Endpoint: /api/v1/notifications
+
+Body (Request JSON):
+{
+  "periodId": "uuid-do-periodo",
+  "sectorId": "uuid-do-setor",
+  "notificationDate": "2024-03-20",
+  "classification": "INCIDENT_WITHOUT_HARM",
+  "category": "Processo",
+  "subcategory": "Falha na identificação",
+  "description": "Pulseira do paciente estava ilegível.",
+  "isSelfNotification": true,
+  "professionalCategory": "Enfermeiro",
+  "professionalName": "João Silva"
+}
+
+Valores possíveis para 'classification':
+- INCIDENT_WITH_MINOR_HARM (Incidente com Dano Leve)
+- INCIDENT_WITH_MODERATE_HARM (Incidente com Dano Moderado)
+- INCIDENT_WITHOUT_HARM (Incidente sem Dano)
+- RISK_CIRCUMSTANCE (Circunstância de Risco)
+
+Retorno (Response JSON - 201 Created):
+{
+  "success": true,
+  "message": "Notificação criada com sucesso",
+  "data": {
+    "id": "uuid-gerado",
+    "classification": "INCIDENT_WITHOUT_HARM",
+    ...
+  }
+}
+
+--------------------------------------------------------------------------------
+2.2. ATUALIZAR NOTIFICAÇÃO
+Método: PUT
+Endpoint: /api/v1/notifications/{id}
+
+Body (Request JSON):
+{
+  "notificationDate": "2024-03-20",
+  "classification": "INCIDENT_WITH_MINOR_HARM",
+  "category": "Medicamento",
+  "subcategory": "Dose omitida",
+  "description": "Paciente recusou medicação.",
+  "isSelfNotification": false,
+  "professionalCategory": "Técnico",
+  "professionalName": "Maria Souza"
+}
+
+Retorno (Response JSON - 200 OK):
+{
+  "success": true,
+  "message": "Notificação atualizada com sucesso",
+  "data": { ...objeto atualizado... }
+}
+
+--------------------------------------------------------------------------------
+2.3. BUSCAR NOTIFICAÇÃO POR ID
+Método: GET
+Endpoint: /api/v1/notifications/{id}
+
+Retorno (Response JSON - 200 OK):
+{
+  "success": true,
+  "data": { ...detalhes da notificação... }
+}
+
+--------------------------------------------------------------------------------
+2.4. LISTAR NOTIFICAÇÕES POR PERÍODO
+Método: GET
+Endpoint: /api/v1/notifications?periodId={periodId}
+
+Retorno (Response JSON - 200 OK):
+{
+  "success": true,
+  "data": [ ...lista de notificações... ]
+}
+
+--------------------------------------------------------------------------------
+2.5. EXCLUIR NOTIFICAÇÃO
+Método: DELETE
+Endpoint: /api/v1/notifications/{id}
+
+Retorno (Response JSON - 200 OK):
+{
+  "success": true,
+  "message": "Notificação excluída com sucesso",
+  "data": null
+}

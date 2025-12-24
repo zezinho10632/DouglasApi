@@ -9,6 +9,7 @@ import com.medTech.Douglas.service.AdverseEventService
 import com.medTech.Douglas.service.usecase.adverseevent.ListAdverseEventsByDateRangeUseCase
 import com.medTech.Douglas.service.usecase.adverseevent.ListAdverseEventsByUserUseCase
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -62,10 +63,13 @@ class AdverseEventController(
     }
 
     @GetMapping("/period/{periodId}")
-    @Operation(summary = "Listar eventos adversos por período com filtros opcionais")
+    @Operation(summary = "Listar eventos adversos por período com filtros opcionais", description = "Lista eventos adversos de um período, podendo filtrar pelo tipo do evento.")
     @PreAuthorize("hasRole('ADMIN')")
     fun listByPeriod(
+        @Parameter(description = "ID do período", required = true)
         @PathVariable periodId: UUID,
+
+        @Parameter(description = "Tipo do evento adverso (ex: FALL, MEDICATION_ERROR)", required = false)
         @RequestParam(required = false) eventType: EventType?
     ): ResponseEntity<ApiResponse<List<AdverseEventResponse>>> {
         val response = adverseEventService.listByPeriod(periodId, eventType)

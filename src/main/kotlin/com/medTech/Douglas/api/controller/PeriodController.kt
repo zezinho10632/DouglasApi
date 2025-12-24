@@ -5,6 +5,7 @@ import com.medTech.Douglas.api.dto.period.CreatePeriodRequest
 import com.medTech.Douglas.api.dto.period.PeriodResponse
 import com.medTech.Douglas.service.PeriodService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -43,10 +44,15 @@ class PeriodController(
     }
 
     @GetMapping
-    @Operation(summary = "Listar períodos por setor com filtros opcionais")
+    @Operation(summary = "Listar períodos por setor com filtros opcionais", description = "Lista períodos de um setor, podendo filtrar por status (OPEN/CLOSED) e ano.")
     fun listBySector(
+        @Parameter(description = "ID do setor", required = true)
         @RequestParam sectorId: UUID,
+
+        @Parameter(description = "Status do período (OPEN ou CLOSED)", required = false)
         @RequestParam(required = false) status: PeriodStatus?,
+
+        @Parameter(description = "Ano de referência", required = false)
         @RequestParam(required = false) year: Int?
     ): ResponseEntity<ApiResponse<List<PeriodResponse>>> {
         val response = periodService.listBySector(sectorId, status, year)

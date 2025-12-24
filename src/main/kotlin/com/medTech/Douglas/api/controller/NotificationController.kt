@@ -8,6 +8,7 @@ import com.medTech.Douglas.service.NotificationService
 import com.medTech.Douglas.service.usecase.notification.ListNotificationsByDateRangeUseCase
 import com.medTech.Douglas.service.usecase.notification.ListNotificationsByUserUseCase
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -61,11 +62,16 @@ class NotificationController(
     }
 
     @GetMapping
-    @Operation(summary = "Listar notificações por período com filtros opcionais")
+    @Operation(summary = "Listar notificações por período com filtros opcionais", description = "Lista notificações de um período, podendo filtrar por classificação e categoria.")
     @PreAuthorize("hasRole('ADMIN')")
     fun listByPeriod(
+        @Parameter(description = "ID do período", required = true)
         @RequestParam periodId: UUID,
+
+        @Parameter(description = "Classificação da notificação (ex: INCIDENT, NEAR_MISS)", required = false)
         @RequestParam(required = false) classification: NotificationClassification?,
+
+        @Parameter(description = "Categoria da notificação (busca parcial)", required = false)
         @RequestParam(required = false) category: String?
     ): ResponseEntity<ApiResponse<List<NotificationResponse>>> {
         val response = notificationService.listByPeriod(periodId, classification, category)

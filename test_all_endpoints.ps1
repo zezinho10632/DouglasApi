@@ -192,4 +192,16 @@ if ($createdAe) {
 Test-Endpoint -Url "$baseUrl/audit-logs?action=CREATE" -Headers $headers -Description "Filter Audit Logs (Action=CREATE)" | Out-Null
 Test-Endpoint -Url "$baseUrl/audit-logs?resource=Notification" -Headers $headers -Description "Filter Audit Logs (Resource=Notification)" | Out-Null
 
+# 7. Reports (Cumulative)
+Write-Host "Testing Cumulative Reports..." -ForegroundColor Cyan
+$startDate = (Get-Date).AddMonths(-2).ToString("yyyy-MM-dd")
+$endDate = (Get-Date).ToString("yyyy-MM-dd")
+
+# Custom Range
+Test-Endpoint -Url "$baseUrl/reports/panel/cumulative?sectorId=$sectorId&periodicity=CUSTOM&startDate=$startDate&endDate=$endDate" -Headers $headers -Description "Cumulative Report (Custom Range)" | Out-Null
+
+# Annual
+$currentYear = (Get-Date).Year
+Test-Endpoint -Url "$baseUrl/reports/panel/cumulative?sectorId=$sectorId&periodicity=ANNUAL&year=$currentYear" -Headers $headers -Description "Cumulative Report (Annual)" | Out-Null
+
 Write-Host "All tests completed." -ForegroundColor Cyan

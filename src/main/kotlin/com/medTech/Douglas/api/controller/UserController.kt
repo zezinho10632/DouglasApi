@@ -1,8 +1,10 @@
 package com.medTech.Douglas.api.controller
 
 import com.medTech.Douglas.api.dto.ApiResponse
+import com.medTech.Douglas.api.dto.user.ChangeUserPasswordRequest
 import com.medTech.Douglas.api.dto.user.UpdateUserRequest
 import com.medTech.Douglas.api.dto.user.UserResponse
+import com.medTech.Douglas.service.usecase.user.ChangeUserPasswordUseCase
 import com.medTech.Douglas.service.usecase.user.DeleteUserUseCase
 import com.medTech.Douglas.service.usecase.user.ListUsersUseCase
 import com.medTech.Douglas.service.usecase.user.UpdateUserUseCase
@@ -22,7 +24,8 @@ import com.medTech.Douglas.domain.enums.Role
 class UserController(
     private val listUsersUseCase: ListUsersUseCase,
     private val updateUserUseCase: UpdateUserUseCase,
-    private val deleteUserUseCase: DeleteUserUseCase
+    private val deleteUserUseCase: DeleteUserUseCase,
+    private val changeUserPasswordUseCase: ChangeUserPasswordUseCase
 ) {
 
     @GetMapping
@@ -47,6 +50,17 @@ class UserController(
     ): ResponseEntity<ApiResponse<UserResponse>> {
         val response = updateUserUseCase.execute(id, request)
         return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    @PutMapping("/{id}/change-password")
+    @Operation(summary = "Alterar senha de um usuário (Admin)")
+    @PreAuthorize("hasRole('ADMIN')")
+    fun changePassword(
+        @PathVariable id: UUID,
+        @RequestBody request: ChangeUserPasswordRequest
+    ): ResponseEntity<ApiResponse<Unit>> {
+        changeUserPasswordUseCase.execute(id, request)
+        return ResponseEntity.ok(ApiResponse.success(null, "Senha alterada com sucesso"))
     }
 
     @DeleteMapping("/{id}")

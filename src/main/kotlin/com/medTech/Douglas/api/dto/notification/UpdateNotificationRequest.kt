@@ -1,15 +1,11 @@
 package com.medTech.Douglas.api.dto.notification
 
-import com.medTech.Douglas.domain.enums.NotificationClassification
-import java.time.LocalDate
+import java.util.UUID
 
 data class UpdateNotificationRequest(
-    val notificationDate: LocalDate,
-    val classification: NotificationClassification,
-    val category: String,
-    val subcategory: String,
-    val description: String,
+    val classificationId: UUID,
+    val categoryId: UUID,
+    val professionalCategoryId: UUID?,
     val isSelfNotification: Boolean,
-    val professionalCategory: String,
-    val professionalName: String?
+    val quantity: Int
 )

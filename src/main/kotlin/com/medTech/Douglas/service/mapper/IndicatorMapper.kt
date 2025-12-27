@@ -21,7 +21,6 @@ class IndicatorMapper {
             handHygieneAdherence = request.handHygieneAdherence,
             fallRiskAssessment = request.fallRiskAssessment,
             pressureInjuryRiskAssessment = request.pressureInjuryRiskAssessment,
-            totalPatients = request.totalPatients,
             observations = request.observations
         )
     }
@@ -37,7 +36,6 @@ class IndicatorMapper {
             handHygieneAdherence = domain.handHygieneAdherence,
             fallRiskAssessment = domain.fallRiskAssessment,
             pressureInjuryRiskAssessment = domain.pressureInjuryRiskAssessment,
-            totalPatients = domain.totalPatients,
             observations = domain.observations,
             createdAt = domain.createdAt.toString()
         )

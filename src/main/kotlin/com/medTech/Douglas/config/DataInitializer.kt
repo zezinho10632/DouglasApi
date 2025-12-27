@@ -2,7 +2,6 @@ package com.medTech.Douglas.config
 
 import com.medTech.Douglas.domain.entity.*
 import com.medTech.Douglas.domain.enums.JobTitle
-import com.medTech.Douglas.domain.enums.NotificationClassification
 import com.medTech.Douglas.domain.enums.PeriodStatus
 import com.medTech.Douglas.domain.enums.Role
 import com.medTech.Douglas.repository.*
@@ -25,6 +24,9 @@ class DataInitializer(
     private val fallRiskRepository: FallRiskAssessmentRepository,
     private val pressureInjuryRepository: PressureInjuryRiskAssessmentRepository,
     private val notificationRepository: NotificationRepository,
+    private val classificationRepository: NotificationClassificationRepository,
+    private val categoryRepository: NotificationCategoryRepository,
+    private val professionalCategoryRepository: ProfessionalCategoryRepository,
     private val passwordHashingService: PasswordHashingService
 ) : CommandLineRunner {
 
@@ -116,7 +118,6 @@ class DataInitializer(
                 handHygieneAdherence = BigDecimal("85.0"),
                 fallRiskAssessment = BigDecimal("90.0"),
                 pressureInjuryRiskAssessment = BigDecimal("89.5"),
-                totalPatients = 150,
                 observations = "Mocked data"
             )
             complianceRepository.save(compliance)
@@ -171,34 +172,46 @@ class DataInitializer(
         if (notificationRepository.findByPeriodId(periodId).isEmpty()) {
             logger.info("Creating Mock Notifications...")
             
+            // Create Classifications
+            val class1 = classificationRepository.findByName("Incidente sem dano") 
+                ?: classificationRepository.save(NotificationClassification(name = "Incidente sem dano"))
+            val class2 = classificationRepository.findByName("Circunstância de Risco") 
+                ?: classificationRepository.save(NotificationClassification(name = "Circunstância de Risco"))
+
+            // Create Categories
+            val cat1 = categoryRepository.findByName("Falha na assistência de enfermagem") 
+                ?: categoryRepository.save(NotificationCategory(name = "Falha na assistência de enfermagem"))
+            val cat2 = categoryRepository.findByName("Lesão por pressão") 
+                ?: categoryRepository.save(NotificationCategory(name = "Lesão por pressão"))
+            
+            // Create Professional Categories
+            val prof1 = professionalCategoryRepository.findByName("Enfermeiro")
+                ?: professionalCategoryRepository.save(ProfessionalCategory(name = "Enfermeiro"))
+            val prof2 = professionalCategoryRepository.findByName("Técnico de Enfermagem")
+                ?: professionalCategoryRepository.save(ProfessionalCategory(name = "Técnico de Enfermagem"))
+
             // Notification 1: Incident without harm
             val notif1 = Notification(
                 periodId = periodId,
                 sectorId = sectorId,
-                notificationDate = LocalDate.now().minusDays(2),
-                classification = NotificationClassification.INCIDENT_WITHOUT_HARM,
-                category = "Medication",
-                subcategory = "Dispensing error",
-                description = "Wrong medication dispensed but identified before administration.",
-                isSelfNotification = false,
-                professionalCategory = "Nurse",
-                professionalName = "Nurse Joy",
+                classification = class1,
+                category = cat1,
+                professionalCategory = prof1,
+                isSelfNotification = true,
+                quantity = 51,
                 createdBy = adminUser?.id
             )
             notificationRepository.save(notif1)
 
-            // Notification 2: Risk Circumstance (The one user mentioned potential issues with)
+            // Notification 2: Risk Circumstance
             val notif2 = Notification(
                 periodId = periodId,
                 sectorId = sectorId,
-                notificationDate = LocalDate.now().minusDays(1),
-                classification = NotificationClassification.RISK_CIRCUMSTANCE,
-                category = "Infrastructure",
-                subcategory = "Slippery floor",
-                description = "Floor wet without signage near bed 4.",
-                isSelfNotification = true,
-                professionalCategory = "Physiotherapist",
-                professionalName = "John Doe",
+                classification = class2,
+                category = cat2,
+                professionalCategory = prof2,
+                isSelfNotification = false,
+                quantity = 23,
                 createdBy = adminUser?.id
             )
             notificationRepository.save(notif2)

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
@@ -21,6 +22,7 @@ class SectorController(
 
     @PostMapping
     @Operation(summary = "Criar um novo setor")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun create(@RequestBody request: CreateSectorRequest): ResponseEntity<ApiResponse<SectorResponse>> {
         val response = sectorService.create(request)
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -29,6 +31,7 @@ class SectorController(
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar um setor existente")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun update(
         @PathVariable id: UUID,
         @RequestBody request: UpdateSectorRequest
@@ -39,6 +42,7 @@ class SectorController(
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Excluir um setor")
+    @PreAuthorize("hasRole('ADMIN')")
     fun delete(@PathVariable id: UUID): ResponseEntity<ApiResponse<Unit>> {
         sectorService.delete(id)
         return ResponseEntity.ok(ApiResponse.success(null, "Setor excluído com sucesso"))

@@ -53,15 +53,9 @@ class GenerateCompletePanelReportUseCase(
         val aeUsers = userRepository.findAllById(aeUserIds).associateBy { it.id }
         val adverseEvents = adverseEventsDomain.map { adverseEventMapper.toResponse(it, aeUsers) }
 
-        val notificationsDomain = if (startDate != null && endDate != null) {
-            notificationRepository.findByPeriodIdAndSectorIdAndNotificationDateBetween(periodId, sectorId, startDate, endDate)
-        } else {
-            notificationRepository.findByPeriodIdAndSectorId(periodId, sectorId)
-        }
+        val notificationsDomain = notificationRepository.findByPeriodIdAndSectorId(periodId, sectorId)
 
-        val notifUserIds = notificationsDomain.mapNotNull { it.createdBy }.distinct()
-        val notifUsers = userRepository.findAllById(notifUserIds).associateBy { it.id }
-        val notifications = notificationsDomain.map { notificationMapper.toResponse(it, notifUsers) }
+        val notifications = notificationsDomain.map { notificationMapper.toResponse(it) }
 
         return CompletePanelReportResponse(
             complianceIndicator = compliance,

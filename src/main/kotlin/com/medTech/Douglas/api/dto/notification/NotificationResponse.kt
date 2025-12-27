@@ -1,8 +1,8 @@
 package com.medTech.Douglas.api.dto.notification
 
-import com.medTech.Douglas.domain.enums.JobTitle
-import com.medTech.Douglas.domain.enums.NotificationClassification
-import java.time.LocalDate
+import com.medTech.Douglas.api.dto.category.CategoryResponse
+import com.medTech.Douglas.api.dto.classification.ClassificationResponse
+import com.medTech.Douglas.api.dto.professionalcategory.ProfessionalCategoryResponse
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -10,15 +10,11 @@ data class NotificationResponse(
     val id: UUID,
     val periodId: UUID,
     val sectorId: UUID,
-    val notificationDate: LocalDate,
-    val classification: NotificationClassification,
-    val category: String,
-    val subcategory: String,
-    val description: String,
+    val classification: ClassificationResponse,
+    val category: CategoryResponse,
+    val professionalCategory: ProfessionalCategoryResponse?,
     val isSelfNotification: Boolean,
-    val professionalCategory: String,
-    val professionalName: String?,
-    val createdByName: String? = null,
-    val createdByJobTitle: JobTitle? = null,
+    val quantity: Int,
+    val createdBy: UUID?,
     val createdAt: LocalDateTime
 )

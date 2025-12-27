@@ -3,11 +3,11 @@ package com.medTech.Douglas.service
 import com.medTech.Douglas.api.dto.notification.CreateNotificationRequest
 import com.medTech.Douglas.api.dto.notification.NotificationResponse
 import com.medTech.Douglas.api.dto.notification.UpdateNotificationRequest
-import com.medTech.Douglas.domain.enums.PeriodStatus
-import com.medTech.Douglas.exception.ClosedPeriodException
-import com.medTech.Douglas.exception.PeriodNotFoundException
 import com.medTech.Douglas.exception.ResourceNotFoundException
+import com.medTech.Douglas.repository.NotificationCategoryRepository
+import com.medTech.Douglas.repository.NotificationClassificationRepository
 import com.medTech.Douglas.repository.NotificationRepository
+import com.medTech.Douglas.repository.ProfessionalCategoryRepository
 import com.medTech.Douglas.repository.UserRepository
 import com.medTech.Douglas.service.mapper.NotificationMapper
 import com.medTech.Douglas.service.validation.PeriodValidator
@@ -16,12 +16,13 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-import com.medTech.Douglas.domain.enums.NotificationClassification
-
 @Service
 class NotificationService(
     private val repository: NotificationRepository,
     private val userRepository: UserRepository,
+    private val classificationRepository: NotificationClassificationRepository,
+    private val categoryRepository: NotificationCategoryRepository,
+    private val professionalCategoryRepository: ProfessionalCategoryRepository,
     private val periodValidator: PeriodValidator,
     private val auditLogService: AuditLogService,
     private val mapper: NotificationMapper
@@ -29,7 +30,7 @@ class NotificationService(
 
     @Transactional
     fun create(request: CreateNotificationRequest): NotificationResponse {
-        periodValidator.validatePeriodIsOpen(UUID.fromString(request.periodId))
+        periodValidator.validatePeriodIsOpen(request.periodId)
         val email = SecurityContextHolder.getContext().authentication.name
         val user = userRepository.findByEmail(email)
         val notification = mapper.toDomain(request, user?.id)
@@ -41,12 +42,9 @@ class NotificationService(
     }
 
     @Transactional(readOnly = true)
-    fun listByPeriod(periodId: UUID, classification: NotificationClassification? = null, category: String? = null): List<NotificationResponse> {
-        val notifications = repository.search(periodId, classification, category)
-        val userIds = notifications.mapNotNull { it.createdBy }.distinct()
-        val users = userRepository.findAllById(userIds).associateBy { it.id }
-        
-        return notifications.map { mapper.toResponse(it, users) }
+    fun listByPeriod(periodId: UUID, classificationId: UUID? = null, categoryId: UUID? = null): List<NotificationResponse> {
+        val notifications = repository.search(periodId, classificationId, categoryId)
+        return notifications.map { mapper.toResponse(it) }
     }
 
     @Transactional
@@ -56,16 +54,22 @@ class NotificationService(
 
         periodValidator.validatePeriodIsOpen(notification.periodId)
 
-        notification.update(
-            notificationDate = request.notificationDate,
-            classification = request.classification,
-            category = request.category,
-            subcategory = request.subcategory,
-            description = request.description,
-            isSelfNotification = request.isSelfNotification,
-            professionalCategory = request.professionalCategory,
-            professionalName = request.professionalName
-        )
+        val classification = classificationRepository.findById(request.classificationId)
+            .orElseThrow { ResourceNotFoundException("Classification not found") }
+        val category = categoryRepository.findById(request.categoryId)
+            .orElseThrow { ResourceNotFoundException("Category not found") }
+        
+        val professionalCategory = request.professionalCategoryId?.let {
+            professionalCategoryRepository.findById(it)
+                .orElseThrow { ResourceNotFoundException("Professional Category not found") }
+        }
+
+        notification.classification = classification
+        notification.category = category
+        notification.professionalCategory = professionalCategory
+        notification.isSelfNotification = request.isSelfNotification
+        notification.quantity = request.quantity
+        notification.updatedAt = java.time.LocalDateTime.now()
 
         val saved = repository.save(notification)
         
@@ -74,27 +78,11 @@ class NotificationService(
         return mapper.toResponse(saved)
     }
 
-    @Transactional
-    fun delete(id: UUID) {
-        val notification = repository.findById(id)
-            .orElseThrow { ResourceNotFoundException("Notification not found with id: $id") }
-        
-        periodValidator.validatePeriodIsOpen(notification.periodId)
-        
-        repository.deleteById(id)
-        
-        auditLogService.log("DELETE", "Notification", id.toString(), "Deleted Notification")
-    }
-
     @Transactional(readOnly = true)
     fun findById(id: UUID): NotificationResponse {
         val notification = repository.findById(id)
             .orElseThrow { ResourceNotFoundException("Notification not found with id: $id") }
         
-        val userMap = notification.createdBy?.let { 
-             userRepository.findById(it).orElse(null)?.let { user -> mapOf(user.id to user) }
-        } ?: emptyMap()
-        
-        return mapper.toResponse(notification, userMap)
+        return mapper.toResponse(notification)
     }
 }

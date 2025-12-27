@@ -52,11 +52,6 @@ class PeriodService(
         val period = repository.findById(id)
             .orElseThrow { PeriodNotFoundException("Period with id $id not found") }
 
-        // Check if there is already an open period for this sector
-        if (repository.findBySectorIdAndStatus(period.sectorId, PeriodStatus.OPEN).isPresent) {
-            throw BusinessRuleException("There is already an open period for this sector")
-        }
-
         period.reopen()
         
         val savedPeriod = repository.save(period)

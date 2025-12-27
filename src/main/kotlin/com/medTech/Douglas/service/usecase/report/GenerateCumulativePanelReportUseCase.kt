@@ -85,7 +85,7 @@ class GenerateCumulativePanelReportUseCase(
         val fallRisk = aggregateFallRisk(reports.mapNotNull { it.fallRiskAssessment })
         val pressureInjury = aggregatePressureInjury(reports.mapNotNull { it.pressureInjuryRiskAssessment })
         val adverseEvents = reports.flatMap { it.adverseEvents }.sortedByDescending { it.eventDate }
-        val notifications = reports.flatMap { it.notifications }.sortedByDescending { it.notificationDate }
+        val notifications = reports.flatMap { it.notifications }.sortedByDescending { it.createdAt } // Sort by creation date as notificationDate is removed
 
         return CompletePanelReportResponse(
             complianceIndicator = compliance,
@@ -100,15 +100,11 @@ class GenerateCumulativePanelReportUseCase(
     private fun aggregateCompliance(indicators: List<ComplianceIndicatorResponse>): ComplianceIndicatorResponse? {
         if (indicators.isEmpty()) return null
 
-        val totalPatients = indicators.sumOf { it.totalPatients }
-        if (totalPatients == 0) return indicators.first().copy(totalPatients = 0) // Or return empty with 0s
-
-        // Helper to recalculate weighted average percentage
-        fun weightedAvg(selector: (ComplianceIndicatorResponse) -> BigDecimal): BigDecimal {
-            val weightedSum = indicators.sumOf { 
-                it.totalPatients.toBigDecimal().multiply(selector(it)) 
-            }
-            return weightedSum.divide(totalPatients.toBigDecimal(), 2, RoundingMode.HALF_UP)
+        // Helper to recalculate average percentage
+        fun avg(selector: (ComplianceIndicatorResponse) -> BigDecimal): BigDecimal {
+            if (indicators.isEmpty()) return BigDecimal.ZERO
+            val sum = indicators.sumOf { selector(it) }
+            return sum.divide(BigDecimal(indicators.size), 2, RoundingMode.HALF_UP)
         }
 
         val observations = indicators.mapNotNull { it.observations }.joinToString("\n---\n")
@@ -117,13 +113,12 @@ class GenerateCumulativePanelReportUseCase(
             id = "aggregated",
             periodId = "aggregated",
             sectorId = indicators.first().sectorId,
-            totalPatients = totalPatients,
-            completeWristband = weightedAvg { it.completeWristband },
-            patientCommunication = weightedAvg { it.patientCommunication },
-            medicationIdentified = weightedAvg { it.medicationIdentified },
-            handHygieneAdherence = weightedAvg { it.handHygieneAdherence },
-            fallRiskAssessment = weightedAvg { it.fallRiskAssessment },
-            pressureInjuryRiskAssessment = weightedAvg { it.pressureInjuryRiskAssessment },
+            completeWristband = avg { it.completeWristband },
+            patientCommunication = avg { it.patientCommunication },
+            medicationIdentified = avg { it.medicationIdentified },
+            handHygieneAdherence = avg { it.handHygieneAdherence },
+            fallRiskAssessment = avg { it.fallRiskAssessment },
+            pressureInjuryRiskAssessment = avg { it.pressureInjuryRiskAssessment },
             observations = if (observations.isBlank()) null else observations,
             createdAt = LocalDate.now().toString()
         )

@@ -61,7 +61,6 @@ class IndicatorService(
             handHygieneAdherence = request.handHygieneAdherence,
             fallRiskAssessment = request.fallRiskAssessment,
             pressureInjuryRiskAssessment = request.pressureInjuryRiskAssessment,
-            totalPatients = request.totalPatients,
             observations = request.observations
         )
         

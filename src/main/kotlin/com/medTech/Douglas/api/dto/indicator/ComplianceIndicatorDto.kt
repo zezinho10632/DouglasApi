@@ -11,7 +11,6 @@ data class ComplianceIndicatorRequest(
     val handHygieneAdherence: BigDecimal,
     val fallRiskAssessment: BigDecimal,
     val pressureInjuryRiskAssessment: BigDecimal,
-    val totalPatients: Int,
     val observations: String?
 )
 
@@ -25,7 +24,6 @@ data class ComplianceIndicatorResponse(
     val handHygieneAdherence: BigDecimal,
     val fallRiskAssessment: BigDecimal,
     val pressureInjuryRiskAssessment: BigDecimal,
-    val totalPatients: Int,
     val observations: String?,
     val createdAt: String
 )

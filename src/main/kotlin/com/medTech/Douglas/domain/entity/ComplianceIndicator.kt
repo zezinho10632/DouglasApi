@@ -35,9 +35,6 @@ class ComplianceIndicator(
     @Column(name = "pressure_injury_risk_assessment", nullable = false)
     var pressureInjuryRiskAssessment: BigDecimal,
 
-    @Column(name = "total_patients", nullable = false)
-    var totalPatients: Int,
-
     @Column(columnDefinition = "TEXT")
     var observations: String? = null,
 
@@ -54,7 +51,6 @@ class ComplianceIndicator(
         handHygieneAdherence: BigDecimal,
         fallRiskAssessment: BigDecimal,
         pressureInjuryRiskAssessment: BigDecimal,
-        totalPatients: Int,
         observations: String?
     ) {
         this.completeWristband = completeWristband
@@ -63,7 +59,6 @@ class ComplianceIndicator(
         this.handHygieneAdherence = handHygieneAdherence
         this.fallRiskAssessment = fallRiskAssessment
         this.pressureInjuryRiskAssessment = pressureInjuryRiskAssessment
-        this.totalPatients = totalPatients
         this.observations = observations
         this.updatedAt = LocalDateTime.now()
     }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
@@ -20,6 +21,7 @@ class IndicatorController(
     // Compliance
     @PostMapping("/compliance")
     @Operation(summary = "Salvar indicador de conformidade")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun saveCompliance(@RequestBody request: ComplianceIndicatorRequest): ResponseEntity<ApiResponse<ComplianceIndicatorResponse>> {
         val response = indicatorService.saveCompliance(request)
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -28,6 +30,7 @@ class IndicatorController(
 
     @PutMapping("/compliance/{id}")
     @Operation(summary = "Atualizar indicador de conformidade")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun updateCompliance(@PathVariable id: UUID, @RequestBody request: ComplianceIndicatorRequest): ResponseEntity<ApiResponse<ComplianceIndicatorResponse>> {
         val response = indicatorService.updateCompliance(id, request)
         return ResponseEntity.ok(ApiResponse.success(response, "Indicador de conformidade atualizado com sucesso"))
@@ -50,6 +53,7 @@ class IndicatorController(
     // Hand Hygiene
     @PostMapping("/hand-hygiene")
     @Operation(summary = "Salvar avaliação de higiene das mãos")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun saveHandHygiene(@RequestBody request: HandHygieneRequest): ResponseEntity<ApiResponse<HandHygieneResponse>> {
         val response = indicatorService.saveHandHygiene(request)
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -58,6 +62,7 @@ class IndicatorController(
 
     @PutMapping("/hand-hygiene/{id}")
     @Operation(summary = "Atualizar avaliação de higiene das mãos")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun updateHandHygiene(@PathVariable id: UUID, @RequestBody request: HandHygieneRequest): ResponseEntity<ApiResponse<HandHygieneResponse>> {
         val response = indicatorService.updateHandHygiene(id, request)
         return ResponseEntity.ok(ApiResponse.success(response, "Avaliação de higiene das mãos atualizada com sucesso"))
@@ -80,6 +85,7 @@ class IndicatorController(
     // Fall Risk
     @PostMapping("/fall-risk")
     @Operation(summary = "Salvar avaliação de risco de queda")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun saveFallRisk(@RequestBody request: FallRiskRequest): ResponseEntity<ApiResponse<FallRiskResponse>> {
         val response = indicatorService.saveFallRisk(request)
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -88,6 +94,7 @@ class IndicatorController(
 
     @PutMapping("/fall-risk/{id}")
     @Operation(summary = "Atualizar avaliação de risco de queda")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun updateFallRisk(@PathVariable id: UUID, @RequestBody request: FallRiskRequest): ResponseEntity<ApiResponse<FallRiskResponse>> {
         val response = indicatorService.updateFallRisk(id, request)
         return ResponseEntity.ok(ApiResponse.success(response, "Avaliação de risco de queda atualizada com sucesso"))
@@ -110,6 +117,7 @@ class IndicatorController(
     // Pressure Injury Risk
     @PostMapping("/pressure-injury")
     @Operation(summary = "Salvar avaliação de risco de lesão por pressão")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun savePressureInjury(@RequestBody request: PressureInjuryRiskRequest): ResponseEntity<ApiResponse<PressureInjuryRiskResponse>> {
         val response = indicatorService.savePressureInjuryRisk(request)
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -118,6 +126,7 @@ class IndicatorController(
 
     @PutMapping("/pressure-injury/{id}")
     @Operation(summary = "Atualizar avaliação de risco de lesão por pressão")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun updatePressureInjury(@PathVariable id: UUID, @RequestBody request: PressureInjuryRiskRequest): ResponseEntity<ApiResponse<PressureInjuryRiskResponse>> {
         val response = indicatorService.updatePressureInjuryRisk(id, request)
         return ResponseEntity.ok(ApiResponse.success(response, "Avaliação de risco de lesão por pressão atualizada com sucesso"))

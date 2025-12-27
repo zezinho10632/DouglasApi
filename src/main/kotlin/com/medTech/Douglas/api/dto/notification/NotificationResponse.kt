@@ -13,8 +13,9 @@ data class NotificationResponse(
     val classification: ClassificationResponse,
     val category: CategoryResponse,
     val professionalCategory: ProfessionalCategoryResponse?,
-    val isSelfNotification: Boolean,
-    val quantity: Int,
+    val quantityClassification: Int,
+    val quantityCategory: Int,
+    val quantityProfessional: Int,
     val createdBy: UUID?,
     val createdAt: LocalDateTime
 )

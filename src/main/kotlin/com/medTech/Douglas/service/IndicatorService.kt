@@ -101,8 +101,7 @@ class IndicatorService(
         periodValidator.validatePeriodIsOpen(indicator.periodId)
         
         indicator.update(
-            totalObservations = request.totalObservations,
-            compliantObservations = request.compliantObservations
+            compliancePercentage = request.compliancePercentage
         )
         
         val saved = handHygieneRepository.save(indicator)

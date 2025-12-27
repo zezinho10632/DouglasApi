@@ -1,9 +1,14 @@
 package com.medTech.Douglas.api.controller
 
 import com.medTech.Douglas.api.dto.ApiResponse
+import com.medTech.Douglas.api.dto.compliance.*
 import com.medTech.Douglas.api.dto.indicator.*
 import com.medTech.Douglas.service.IndicatorService
+import com.medTech.Douglas.service.NewComplianceService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.responses.ApiResponse as SwaggerApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -15,7 +20,8 @@ import java.util.UUID
 @RequestMapping("/api/v1/indicators")
 @Tag(name = "Indicadores", description = "APIs de Gestão de Indicadores")
 class IndicatorController(
-    private val indicatorService: IndicatorService
+    private val indicatorService: IndicatorService,
+    private val newComplianceService: NewComplianceService
 ) {
 
     // Compliance
@@ -143,6 +149,89 @@ class IndicatorController(
     @Operation(summary = "Buscar avaliação de risco de lesão por pressão por ID")
     fun getPressureInjuryById(@PathVariable id: UUID): ResponseEntity<ApiResponse<PressureInjuryRiskResponse?>> {
         val response = indicatorService.getPressureInjuryRiskById(id)
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    // Meta Compliance
+    @PostMapping("/meta-compliance")
+    @Operation(summary = "Criar indicador de meta de identificação", description = "Cria um novo indicador de meta de identificação para um período e setor.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "201", description = "Indicador criado com sucesso"),
+        SwaggerApiResponse(responseCode = "400", description = "Dados inválidos"),
+        SwaggerApiResponse(responseCode = "409", description = "Indicador já existe para este período")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun createMeta(@RequestBody request: CreateMetaComplianceRequest): ResponseEntity<ApiResponse<MetaComplianceResponse>> {
+        val response = newComplianceService.createMetaCompliance(request)
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(response, "Indicador criado com sucesso"))
+    }
+
+    @PutMapping("/meta-compliance/{id}")
+    @Operation(summary = "Atualizar indicador de meta de identificação", description = "Atualiza os valores de meta e porcentagem de um indicador existente.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Indicador atualizado com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Indicador não encontrado")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun updateMeta(
+        @Parameter(description = "ID do indicador", required = true)
+        @PathVariable id: UUID,
+        @RequestBody request: UpdateMetaComplianceRequest
+    ): ResponseEntity<ApiResponse<MetaComplianceResponse>> {
+        val response = newComplianceService.updateMetaCompliance(id, request)
+        return ResponseEntity.ok(ApiResponse.success(response, "Indicador atualizado com sucesso"))
+    }
+
+    @GetMapping("/meta-compliance/period/{periodId}")
+    @Operation(summary = "Buscar indicador de meta por período", description = "Retorna o indicador de meta de identificação associado a um período específico.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Indicador encontrado"),
+        SwaggerApiResponse(responseCode = "404", description = "Indicador não encontrado")
+    ])
+    fun findMetaByPeriod(
+        @Parameter(description = "ID do período", required = true)
+        @PathVariable periodId: UUID
+    ): ResponseEntity<ApiResponse<MetaComplianceResponse?>> {
+        val response = newComplianceService.findMetaComplianceByPeriodId(periodId)
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    // Medication Compliance
+    @PostMapping("/medication-compliance")
+    @Operation(summary = "Criar indicador de conformidade de medicamentos", description = "Cria um novo indicador de conformidade de medicamentos.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "201", description = "Indicador criado com sucesso"),
+        SwaggerApiResponse(responseCode = "400", description = "Dados inválidos"),
+        SwaggerApiResponse(responseCode = "409", description = "Indicador já existe para este período")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun createMedication(@RequestBody request: CreateMedicationComplianceRequest): ResponseEntity<ApiResponse<MedicationComplianceResponse>> {
+        val response = newComplianceService.createMedicationCompliance(request)
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(ApiResponse.success(response, "Indicador criado com sucesso"))
+    }
+
+    @PutMapping("/medication-compliance/{id}")
+    @Operation(summary = "Atualizar indicador de conformidade de medicamentos", description = "Atualiza a porcentagem de conformidade de medicamentos.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Indicador atualizado com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Indicador não encontrado")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun updateMedication(
+        @Parameter(description = "ID do indicador", required = true)
+        @PathVariable id: UUID,
+        @RequestBody request: UpdateMedicationComplianceRequest
+    ): ResponseEntity<ApiResponse<MedicationComplianceResponse>> {
+        val response = newComplianceService.updateMedicationCompliance(id, request)
+        return ResponseEntity.ok(ApiResponse.success(response, "Indicador atualizado com sucesso"))
+    }
+
+    @GetMapping("/medication-compliance/period/{periodId}")
+    @Operation(summary = "Buscar indicador de medicamentos por período")
+    fun findMedicationByPeriod(@PathVariable periodId: UUID): ResponseEntity<ApiResponse<MedicationComplianceResponse?>> {
+        val response = newComplianceService.findMedicationComplianceByPeriodId(periodId)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 }

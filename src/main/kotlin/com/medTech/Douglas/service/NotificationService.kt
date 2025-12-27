@@ -67,8 +67,9 @@ class NotificationService(
         notification.classification = classification
         notification.category = category
         notification.professionalCategory = professionalCategory
-        notification.isSelfNotification = request.isSelfNotification
-        notification.quantity = request.quantity
+        notification.quantityClassification = request.quantityClassification
+        notification.quantityCategory = request.quantityCategory
+        notification.quantityProfessional = request.quantityProfessional
         notification.updatedAt = java.time.LocalDateTime.now()
 
         val saved = repository.save(notification)

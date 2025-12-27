@@ -36,8 +36,9 @@ class NotificationMapper(
             classification = classification,
             category = category,
             professionalCategory = professionalCategory,
-            isSelfNotification = request.isSelfNotification,
-            quantity = request.quantity,
+            quantityClassification = request.quantityClassification,
+            quantityCategory = request.quantityCategory,
+            quantityProfessional = request.quantityProfessional,
             createdBy = userId
         )
     }
@@ -50,8 +51,9 @@ class NotificationMapper(
             classification = ClassificationResponse(domain.classification.id, domain.classification.name, domain.classification.active),
             category = CategoryResponse(domain.category.id, domain.category.name, domain.category.active),
             professionalCategory = domain.professionalCategory?.let { ProfessionalCategoryResponse(it.id, it.name, it.active) },
-            isSelfNotification = domain.isSelfNotification,
-            quantity = domain.quantity,
+            quantityClassification = domain.quantityClassification,
+            quantityCategory = domain.quantityCategory,
+            quantityProfessional = domain.quantityProfessional,
             createdBy = domain.createdBy,
             createdAt = domain.createdAt
         )

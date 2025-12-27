@@ -1,6 +1,8 @@
 package com.medTech.Douglas.service.usecase.report
 
 import com.medTech.Douglas.api.dto.adverseevent.AdverseEventResponse
+import com.medTech.Douglas.api.dto.compliance.MedicationComplianceResponse
+import com.medTech.Douglas.api.dto.compliance.MetaComplianceResponse
 import com.medTech.Douglas.api.dto.indicator.*
 import com.medTech.Douglas.api.dto.notification.NotificationResponse
 import com.medTech.Douglas.api.dto.report.CompletePanelReportResponse
@@ -10,6 +12,8 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.util.UUID
+
+import com.medTech.Douglas.api.dto.selfnotification.SelfNotificationResponse
 
 @Component
 class GenerateCumulativePanelReportUseCase(
@@ -84,6 +88,9 @@ class GenerateCumulativePanelReportUseCase(
         val handHygiene = aggregateHandHygiene(reports.mapNotNull { it.handHygieneAssessment })
         val fallRisk = aggregateFallRisk(reports.mapNotNull { it.fallRiskAssessment })
         val pressureInjury = aggregatePressureInjury(reports.mapNotNull { it.pressureInjuryRiskAssessment })
+        val selfNotification = aggregateSelfNotification(reports.mapNotNull { it.selfNotification })
+        val metaCompliance = aggregateMetaCompliance(reports.mapNotNull { it.metaCompliance })
+        val medicationCompliance = aggregateMedicationCompliance(reports.mapNotNull { it.medicationCompliance })
         val adverseEvents = reports.flatMap { it.adverseEvents }.sortedByDescending { it.eventDate }
         val notifications = reports.flatMap { it.notifications }.sortedByDescending { it.createdAt } // Sort by creation date as notificationDate is removed
 
@@ -92,8 +99,70 @@ class GenerateCumulativePanelReportUseCase(
             handHygieneAssessment = handHygiene,
             fallRiskAssessment = fallRisk,
             pressureInjuryRiskAssessment = pressureInjury,
+            selfNotification = selfNotification,
+            metaCompliance = metaCompliance,
+            medicationCompliance = medicationCompliance,
             adverseEvents = adverseEvents,
             notifications = notifications
+        )
+    }
+
+    private fun aggregateMetaCompliance(indicators: List<MetaComplianceResponse>): MetaComplianceResponse? {
+        if (indicators.isEmpty()) return null
+        
+        // Average goal and percentage
+        val avgGoal = indicators.map { it.goalValue }.reduce { acc, dec -> acc.add(dec) }
+            .divide(BigDecimal(indicators.size), 2, RoundingMode.HALF_UP)
+            
+        val avgPercentage = indicators.map { it.percentage }.reduce { acc, dec -> acc.add(dec) }
+            .divide(BigDecimal(indicators.size), 2, RoundingMode.HALF_UP)
+
+        return MetaComplianceResponse(
+            id = UUID.randomUUID(),
+            periodId = UUID.randomUUID(),
+            sectorId = indicators.first().sectorId,
+            goalValue = avgGoal,
+            percentage = avgPercentage,
+            createdBy = null
+        )
+    }
+
+    private fun aggregateMedicationCompliance(indicators: List<MedicationComplianceResponse>): MedicationComplianceResponse? {
+        if (indicators.isEmpty()) return null
+        
+        // Average percentage
+        val avgPercentage = indicators.map { it.percentage }.reduce { acc, dec -> acc.add(dec) }
+            .divide(BigDecimal(indicators.size), 2, RoundingMode.HALF_UP)
+
+        return MedicationComplianceResponse(
+            id = UUID.randomUUID(),
+            periodId = UUID.randomUUID(),
+            sectorId = indicators.first().sectorId,
+            percentage = avgPercentage,
+            createdBy = null
+        )
+    }
+
+    private fun aggregateSelfNotification(indicators: List<SelfNotificationResponse>): SelfNotificationResponse? {
+        if (indicators.isEmpty()) return null
+
+        val totalQuantity = indicators.sumOf { it.quantity }
+        
+        // Weighted average for percentage
+        val weightedSum = indicators.fold(BigDecimal.ZERO) { acc, curr ->
+            acc.add(curr.percentage.multiply(BigDecimal(curr.quantity)))
+        }
+        
+        val avgPercentage = if (totalQuantity == 0) BigDecimal.ZERO 
+            else weightedSum.divide(BigDecimal(totalQuantity), 2, RoundingMode.HALF_UP)
+
+        return SelfNotificationResponse(
+            id = UUID.randomUUID(), // Mock ID for aggregated
+            periodId = UUID.randomUUID(), // Mock ID
+            sectorId = indicators.first().sectorId,
+            quantity = totalQuantity,
+            percentage = avgPercentage,
+            createdBy = null
         )
     }
 
@@ -127,19 +196,14 @@ class GenerateCumulativePanelReportUseCase(
     private fun aggregateHandHygiene(assessments: List<HandHygieneResponse>): HandHygieneResponse? {
         if (assessments.isEmpty()) return null
 
-        val totalObs = assessments.sumOf { it.totalObservations }
-        val compliantObs = assessments.sumOf { it.compliantObservations }
-        
-        val percentage = if (totalObs == 0) BigDecimal.ZERO 
-            else BigDecimal(compliantObs).multiply(BigDecimal(100)).divide(BigDecimal(totalObs), 2, RoundingMode.HALF_UP)
+        val sumPercentage = assessments.sumOf { it.compliancePercentage }
+        val avgPercentage = sumPercentage.divide(BigDecimal(assessments.size), 2, RoundingMode.HALF_UP)
 
         return HandHygieneResponse(
             id = "aggregated",
             periodId = "aggregated",
             sectorId = assessments.first().sectorId,
-            totalObservations = totalObs,
-            compliantObservations = compliantObs,
-            compliancePercentage = percentage,
+            compliancePercentage = avgPercentage,
             createdAt = LocalDate.now().toString()
         )
     }
@@ -213,6 +277,6 @@ class GenerateCumulativePanelReportUseCase(
     }
 
     private fun createEmptyReport(): CompletePanelReportResponse {
-        return CompletePanelReportResponse(null, null, null, null, emptyList(), emptyList())
+        return CompletePanelReportResponse(null, null, null, null, null, null, null, emptyList(), emptyList())
     }
 }

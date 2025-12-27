@@ -28,11 +28,14 @@ class Notification(
     @JoinColumn(name = "professional_category_id", nullable = true)
     var professionalCategory: ProfessionalCategory? = null,
 
-    @Column(name = "is_self_notification", nullable = false)
-    var isSelfNotification: Boolean = false,
+    @Column(name = "quantity_classification", nullable = false)
+    var quantityClassification: Int,
 
-    @Column(nullable = false)
-    var quantity: Int,
+    @Column(name = "quantity_category", nullable = false)
+    var quantityCategory: Int,
+
+    @Column(name = "quantity_professional", nullable = false)
+    var quantityProfessional: Int,
 
     @Column(name = "created_by")
     var createdBy: UUID? = null,

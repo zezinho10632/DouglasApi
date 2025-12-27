@@ -7,6 +7,8 @@ import com.medTech.Douglas.api.dto.notification.UpdateNotificationRequest
 import com.medTech.Douglas.service.NotificationService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.responses.ApiResponse as SwaggerApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -22,7 +24,12 @@ class NotificationController(
 ) {
 
     @PostMapping
-    @Operation(summary = "Criar uma nova notificação")
+    @Operation(summary = "Criar uma nova notificação", description = "Cria uma nova notificação de incidente ou evento para um período e setor.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "201", description = "Notificação criada com sucesso"),
+        SwaggerApiResponse(responseCode = "400", description = "Dados inválidos"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
     fun create(@RequestBody request: CreateNotificationRequest): ResponseEntity<ApiResponse<NotificationResponse>> {
         val response = notificationService.create(request)
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -30,8 +37,15 @@ class NotificationController(
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Atualizar uma notificação existente")
+    @Operation(summary = "Atualizar uma notificação existente", description = "Atualiza os dados de uma notificação existente.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Notificação atualizada com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Notificação não encontrada"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun update(
+        @Parameter(description = "ID da notificação", required = true)
         @PathVariable id: UUID,
         @RequestBody request: UpdateNotificationRequest
     ): ResponseEntity<ApiResponse<NotificationResponse>> {
@@ -40,14 +54,24 @@ class NotificationController(
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Buscar notificação por ID")
-    fun findById(@PathVariable id: UUID): ResponseEntity<ApiResponse<NotificationResponse>> {
+    @Operation(summary = "Buscar notificação por ID", description = "Retorna os detalhes de uma notificação específica.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Notificação encontrada"),
+        SwaggerApiResponse(responseCode = "404", description = "Notificação não encontrada")
+    ])
+    fun findById(
+        @Parameter(description = "ID da notificação", required = true)
+        @PathVariable id: UUID
+    ): ResponseEntity<ApiResponse<NotificationResponse>> {
         val response = notificationService.findById(id)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
     @GetMapping
-    @Operation(summary = "Listar notificações por período com filtros opcionais")
+    @Operation(summary = "Listar notificações por período com filtros opcionais", description = "Lista notificações filtradas por período, classificação e categoria.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    ])
     @PreAuthorize("hasRole('ADMIN')")
     fun listByPeriod(
         @Parameter(description = "ID do período", required = true)

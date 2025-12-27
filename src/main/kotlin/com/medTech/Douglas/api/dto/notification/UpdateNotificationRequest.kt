@@ -6,6 +6,7 @@ data class UpdateNotificationRequest(
     val classificationId: UUID,
     val categoryId: UUID,
     val professionalCategoryId: UUID?,
-    val isSelfNotification: Boolean,
-    val quantity: Int
+    val quantityClassification: Int,
+    val quantityCategory: Int,
+    val quantityProfessional: Int
 )

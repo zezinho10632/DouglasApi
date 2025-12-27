@@ -26,16 +26,24 @@ function Test-Endpoint {
         return $response
     } catch {
         Write-Error "Failed: $_"
+        if ($_.Exception.Response) {
+            $stream = $_.Exception.Response.GetResponseStream()
+            if ($stream) {
+                $reader = New-Object System.IO.StreamReader($stream)
+                Write-Host "Response Body: $($reader.ReadToEnd())" -ForegroundColor Red
+            }
+        }
         return $null
     }
 }
 
 $token = Get-AuthToken -email $adminEmail -password $adminPassword
 $headers = @{ Authorization = "Bearer $token" }
+$rand = Get-Random
 
 # 1. Professional Categories
 Write-Host "`n--- Professional Categories ---" -ForegroundColor Cyan
-$profCatBody = @{ name = "Doctor" }
+$profCatBody = @{ name = "Doctor_$rand" }
 $profCat = Test-Endpoint -Method "POST" -Url "$baseUrl/professional-categories" -Headers $headers -Body $profCatBody -Description "Create Professional Category"
 $profCatId = $profCat.data.id
 
@@ -43,11 +51,11 @@ Test-Endpoint -Method "GET" -Url "$baseUrl/professional-categories" -Headers $he
 
 # 2. Classifications & Categories
 Write-Host "`n--- Classifications & Categories ---" -ForegroundColor Cyan
-$classBody = @{ name = "Incident Test" }
+$classBody = @{ name = "Incident Test_$rand" }
 $classRes = Test-Endpoint -Method "POST" -Url "$baseUrl/classifications" -Headers $headers -Body $classBody -Description "Create Classification"
 $classId = $classRes.data.id
 
-$catBody = @{ name = "Category Test" }
+$catBody = @{ name = "Category Test_$rand" }
 $catRes = Test-Endpoint -Method "POST" -Url "$baseUrl/categories" -Headers $headers -Body $catBody -Description "Create Category"
 $catId = $catRes.data.id
 
@@ -73,15 +81,90 @@ $notifBody = @{
     classificationId = $classId
     categoryId = $catId
     professionalCategoryId = $profCatId
-    quantity = 10
+    quantityClassification = 10
+    quantityCategory = 10
+    quantityProfessional = 5
 }
 $notifRes = Test-Endpoint -Method "POST" -Url "$baseUrl/notifications" -Headers $headers -Body $notifBody -Description "Create Notification with Professional Category"
 $notifId = $notifRes.data.id
 
 Test-Endpoint -Method "GET" -Url "$baseUrl/notifications/$notifId" -Headers $headers -Description "Get Notification"
 
-# 4. Verify Permissions (Manager)
-Write-Host "`n--- Manager Permissions ---" -ForegroundColor Cyan
+# Self Notification
+Write-Host "`n--- Self Notifications ---" -ForegroundColor Cyan
+
+# Check if exists
+$existing = Invoke-RestMethod -Uri "$baseUrl/self-notifications/period/$periodId" -Method Get -Headers $headers -ErrorAction SilentlyContinue
+
+if ($existing.data) {
+    Write-Host "Self Notification already exists. Testing Update..."
+    $selfNotifId = $existing.data.id
+    $updateBody = @{
+        quantity = 25
+        percentage = 80.0
+    }
+    Test-Endpoint -Method "PUT" -Url "$baseUrl/self-notifications/$selfNotifId" -Headers $headers -Body $updateBody -Description "Update Self Notification"
+} else {
+    Write-Host "Creating new Self Notification..."
+    $selfNotifBody = @{
+        periodId = $periodId
+        sectorId = $sectorId
+        quantity = 20
+        percentage = 71.5
+    }
+    Test-Endpoint -Method "POST" -Url "$baseUrl/self-notifications" -Headers $headers -Body $selfNotifBody -Description "Create Self Notification"
+}
+
+Test-Endpoint -Method "GET" -Url "$baseUrl/self-notifications/period/$periodId" -Headers $headers -Description "Get Self Notification"
+
+    # Meta Compliance
+    Write-Host "`n--- Meta Compliance ---" -ForegroundColor Cyan
+    $metaExisting = Invoke-RestMethod -Uri "$baseUrl/indicators/meta-compliance/period/$periodId" -Method Get -Headers $headers -ErrorAction SilentlyContinue
+
+    if ($metaExisting.data) {
+        Write-Host "Meta Compliance already exists. Testing Update..."
+        $metaId = $metaExisting.data.id
+# Try Update
+    $body = @{
+        goalValue = 100
+        percentage = 95.5
+    }
+    
+    Test-Endpoint -Method "PUT" -Url "$baseUrl/indicators/meta-compliance/$metaId" -Headers $headers -Body $body -Description "Update Meta Compliance"
+    } else {
+        Write-Host "Creating Meta Compliance..."
+        $metaBody = @{
+            periodId = $periodId
+            sectorId = $sectorId
+            goalValue = 100.0
+            percentage = 93.0
+        } | ConvertTo-Json
+        Test-Endpoint -Method "POST" -Url "$baseUrl/indicators/meta-compliance" -Headers $headers -Body $metaBody -Description "Create Meta Compliance"
+    }
+
+    # Medication Compliance
+    Write-Host "`n--- Medication Compliance ---" -ForegroundColor Cyan
+    $medExisting = Invoke-RestMethod -Uri "$baseUrl/indicators/medication-compliance/period/$periodId" -Method Get -Headers $headers -ErrorAction SilentlyContinue
+
+    if ($medExisting.data) {
+        Write-Host "Medication Compliance already exists. Testing Update..."
+        $medId = $medExisting.data.id
+        $medBody = @{
+            percentage = 99.9
+        }
+        Test-Endpoint -Method "PUT" -Url "$baseUrl/indicators/medication-compliance/$medId" -Headers $headers -Body $medBody -Description "Update Medication Compliance"
+    } else {
+        Write-Host "Creating Medication Compliance..."
+        $medBody = @{
+            periodId = $periodId
+            sectorId = $sectorId
+            percentage = 100.0
+        }
+        Test-Endpoint -Method "POST" -Url "$baseUrl/indicators/medication-compliance" -Headers $headers -Body $medBody -Description "Create Medication Compliance"
+    }
+
+    # 4. Verify Permissions (Manager)
+    Write-Host "`n--- Manager Permissions ---" -ForegroundColor Cyan
 # Create Manager User
 $mgrEmail = "manager_test_$(Get-Random)@douglas.com"
 $mgrBody = @{ name = "Manager Test"; email = $mgrEmail; password = "password"; role = "MANAGER" }
@@ -92,7 +175,23 @@ $mgrToken = Get-AuthToken -email $mgrEmail -password "password"
 $mgrHeaders = @{ Authorization = "Bearer $mgrToken" }
 
 # Manager Actions
-Test-Endpoint -Method "POST" -Url "$baseUrl/professional-categories" -Headers $mgrHeaders -Body @{ name = "Manager Created Cat" } -Description "Manager Create Prof Category"
-Test-Endpoint -Method "POST" -Url "$baseUrl/sectors" -Headers $mgrHeaders -Body @{ name = "Manager Sector"; code = "MGR-01" } -Description "Manager Create Sector"
+Test-Endpoint -Method "POST" -Url "$baseUrl/professional-categories" -Headers $mgrHeaders -Body @{ name = "Manager Created Cat_$(Get-Random)" } -Description "Manager Create Prof Category"
+$mgrSector = Test-Endpoint -Method "POST" -Url "$baseUrl/sectors" -Headers $mgrHeaders -Body @{ name = "Manager Sector_$(Get-Random)"; code = "MGR-$(Get-Random)" } -Description "Manager Create Sector"
+$mgrSectorId = $mgrSector.data.id
+
+Write-Host "Testing Manager Delete Sector (Expect Failure)..."
+try {
+    Invoke-RestMethod -Uri "$baseUrl/sectors/$mgrSectorId" -Method DELETE -Headers $mgrHeaders
+    Write-Error "Manager WAS able to delete sector! (Security Violation)"
+} catch {
+    if ($_.Exception.Response.StatusCode -eq [System.Net.HttpStatusCode]::Forbidden) {
+        Write-Host "Success: Manager Forbidden (403)" -ForegroundColor Green
+    } else {
+        Write-Error "Unexpected error: $_"
+    }
+}
+
+Write-Host "Testing Admin Delete Sector (Expect Success)..."
+Test-Endpoint -Method "DELETE" -Url "$baseUrl/sectors/$mgrSectorId" -Headers $headers -Description "Admin Delete Sector"
 
 Write-Host "`nAll tests completed."

@@ -45,8 +45,7 @@ class IndicatorMapper {
         return HandHygieneAssessment.create(
             periodId = UUID.fromString(request.periodId),
             sectorId = UUID.fromString(request.sectorId),
-            totalObservations = request.totalObservations,
-            compliantObservations = request.compliantObservations
+            compliancePercentage = request.compliancePercentage
         )
     }
 
@@ -55,8 +54,6 @@ class IndicatorMapper {
             id = domain.id.toString(),
             periodId = domain.periodId.toString(),
             sectorId = domain.sectorId.toString(),
-            totalObservations = domain.totalObservations,
-            compliantObservations = domain.compliantObservations,
             compliancePercentage = domain.compliancePercentage,
             createdAt = domain.createdAt.toString()
         )

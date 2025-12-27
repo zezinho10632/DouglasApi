@@ -27,6 +27,9 @@ class DataInitializer(
     private val classificationRepository: NotificationClassificationRepository,
     private val categoryRepository: NotificationCategoryRepository,
     private val professionalCategoryRepository: ProfessionalCategoryRepository,
+    private val selfNotificationRepository: SelfNotificationRepository,
+    private val metaRepository: MetaComplianceRepository,
+    private val medicationRepository: MedicationComplianceRepository,
     private val passwordHashingService: PasswordHashingService
 ) : CommandLineRunner {
 
@@ -42,10 +45,53 @@ class DataInitializer(
             if (period != null) {
                 createIndicatorsIfNotFound(period.id, sector.id)
                 createNotificationsIfNotFound(period.id, sector.id, adminUser)
+                createSelfNotificationIfNotFound(period.id, sector.id, adminUser)
+                createNewComplianceIfNotFound(period.id, sector.id, adminUser)
             }
         }
     }
     
+    private fun createSelfNotificationIfNotFound(periodId: UUID, sectorId: UUID, adminUser: User?) {
+        if (selfNotificationRepository.findByPeriodId(periodId) == null) {
+            logger.info("Creating Mock Self Notification...")
+            val selfNotification = SelfNotification(
+                periodId = periodId,
+                sectorId = sectorId,
+                quantity = 20,
+                percentage = BigDecimal("71.00"),
+                createdBy = adminUser?.id
+            )
+            selfNotificationRepository.save(selfNotification)
+        }
+    }
+
+    private fun createNewComplianceIfNotFound(periodId: UUID, sectorId: UUID, adminUser: User?) {
+        // Meta Compliance
+        if (metaRepository.findByPeriodId(periodId) == null) {
+            logger.info("Creating Mock Meta Compliance...")
+            val meta = MetaCompliance(
+                periodId = periodId,
+                sectorId = sectorId,
+                goalValue = BigDecimal("100.00"),
+                percentage = BigDecimal("93.00"),
+                createdBy = adminUser?.id
+            )
+            metaRepository.save(meta)
+        }
+
+        // Medication Compliance
+        if (medicationRepository.findByPeriodId(periodId) == null) {
+            logger.info("Creating Mock Medication Compliance...")
+            val medication = MedicationCompliance(
+                periodId = periodId,
+                sectorId = sectorId,
+                percentage = BigDecimal("100.00"),
+                createdBy = adminUser?.id
+            )
+            medicationRepository.save(medication)
+        }
+    }
+
     private fun createSectorIfNotFound(): Sector? {
         val code = "UTI-01"
         return if (!sectorRepository.existsByCode(code)) {
@@ -129,8 +175,7 @@ class DataInitializer(
             val handHygiene = HandHygieneAssessment.create(
                 periodId = periodId,
                 sectorId = sectorId,
-                totalObservations = 50,
-                compliantObservations = 45
+                compliancePercentage = BigDecimal("90.0")
             )
             handHygieneRepository.save(handHygiene)
         }
@@ -197,8 +242,9 @@ class DataInitializer(
                 classification = class1,
                 category = cat1,
                 professionalCategory = prof1,
-                isSelfNotification = true,
-                quantity = 51,
+                quantityClassification = 51,
+                quantityCategory = 51,
+                quantityProfessional = 10,
                 createdBy = adminUser?.id
             )
             notificationRepository.save(notif1)
@@ -210,8 +256,9 @@ class DataInitializer(
                 classification = class2,
                 category = cat2,
                 professionalCategory = prof2,
-                isSelfNotification = false,
-                quantity = 23,
+                quantityClassification = 23,
+                quantityCategory = 23,
+                quantityProfessional = 5,
                 createdBy = adminUser?.id
             )
             notificationRepository.save(notif2)

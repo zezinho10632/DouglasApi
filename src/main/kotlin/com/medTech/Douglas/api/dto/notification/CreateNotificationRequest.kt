@@ -19,9 +19,12 @@ data class CreateNotificationRequest(
     @field:Schema(description = "ID da Categoria Profissional (Opcional)", example = "uuid-da-categoria-profissional")
     val professionalCategoryId: UUID?,
 
-    @field:Schema(description = "Indica se é uma auto-notificação", example = "true")
-    val isSelfNotification: Boolean = false,
+    @field:Schema(description = "Quantidade para Classificação (Incidente)", example = "10")
+    val quantityClassification: Int,
 
-    @field:Schema(description = "Quantidade de ocorrências no mês", example = "5")
-    val quantity: Int
+    @field:Schema(description = "Quantidade para Categoria (Descrição)", example = "10")
+    val quantityCategory: Int,
+
+    @field:Schema(description = "Quantidade para Profissional (Notificantes)", example = "10")
+    val quantityProfessional: Int
 )

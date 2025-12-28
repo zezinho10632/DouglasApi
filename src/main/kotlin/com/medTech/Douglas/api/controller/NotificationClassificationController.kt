@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
 @RestController
-@RequestMapping("/api/v1/classifications")
+@RequestMapping("/api/v1/notification-classifications")
 @Tag(name = "Classificações", description = "Gestão de Classificações de Notificação")
 class NotificationClassificationController(
     private val service: NotificationClassificationService

@@ -48,6 +48,15 @@ class AdverseEventService(
         return events.map { mapper.toResponse(it, users) }
     }
 
+    @Transactional(readOnly = true)
+    fun listBySector(sectorId: UUID): List<AdverseEventResponse> {
+        val events = repository.findBySectorId(sectorId)
+        val userIds = events.mapNotNull { it.createdBy }.distinct()
+        val users = userRepository.findAllById(userIds).associateBy { it.id }
+        
+        return events.map { mapper.toResponse(it, users) }
+    }
+
     @Transactional
     fun update(id: UUID, request: UpdateAdverseEventRequest): AdverseEventResponse {
         val adverseEvent = repository.findById(id)

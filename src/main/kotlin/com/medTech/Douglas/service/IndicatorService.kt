@@ -43,6 +43,11 @@ class IndicatorService(
     }
 
     @Transactional(readOnly = true)
+    fun getComplianceBySector(sectorId: UUID): List<ComplianceIndicatorResponse> {
+        return complianceRepository.findBySectorId(sectorId).map { mapper.toResponse(it) }
+    }
+
+    @Transactional(readOnly = true)
     fun getComplianceById(id: UUID): ComplianceIndicatorResponse? {
         return complianceRepository.findById(id).orElse(null)?.let { mapper.toResponse(it) }
     }
@@ -71,6 +76,18 @@ class IndicatorService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional
+    fun deleteCompliance(id: UUID) {
+        val indicator = complianceRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Indicator not found with id: $id") }
+            
+        periodValidator.validatePeriodIsOpen(indicator.periodId)
+        
+        complianceRepository.delete(indicator)
+        
+        auditLogService.log("DELETE", "ComplianceIndicator", id.toString(), "Deleted Compliance Indicator")
+    }
+
     // Hand Hygiene
     @Transactional
     fun saveHandHygiene(request: HandHygieneRequest): HandHygieneResponse {
@@ -86,6 +103,11 @@ class IndicatorService(
     @Transactional(readOnly = true)
     fun getHandHygieneByPeriod(periodId: UUID): HandHygieneResponse? {
         return handHygieneRepository.findByPeriodId(periodId)?.let { mapper.toResponse(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getHandHygieneBySector(sectorId: UUID): List<HandHygieneResponse> {
+        return handHygieneRepository.findBySectorId(sectorId).map { mapper.toResponse(it) }
     }
 
     @Transactional(readOnly = true)
@@ -111,6 +133,18 @@ class IndicatorService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional
+    fun deleteHandHygiene(id: UUID) {
+        val indicator = handHygieneRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Indicator not found with id: $id") }
+            
+        periodValidator.validatePeriodIsOpen(indicator.periodId)
+        
+        handHygieneRepository.delete(indicator)
+        
+        auditLogService.log("DELETE", "HandHygieneAssessment", id.toString(), "Deleted Hand Hygiene Assessment")
+    }
+
     // Fall Risk
     @Transactional
     fun saveFallRisk(request: FallRiskRequest): FallRiskResponse {
@@ -126,6 +160,11 @@ class IndicatorService(
     @Transactional(readOnly = true)
     fun getFallRiskByPeriod(periodId: UUID): FallRiskResponse? {
         return fallRiskRepository.findByPeriodId(periodId)?.let { mapper.toResponse(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getFallRiskBySector(sectorId: UUID): List<FallRiskResponse> {
+        return fallRiskRepository.findBySectorId(sectorId).map { mapper.toResponse(it) }
     }
 
     @Transactional(readOnly = true)
@@ -156,6 +195,18 @@ class IndicatorService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional
+    fun deleteFallRisk(id: UUID) {
+        val indicator = fallRiskRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Indicator not found with id: $id") }
+            
+        periodValidator.validatePeriodIsOpen(indicator.periodId)
+        
+        fallRiskRepository.delete(indicator)
+        
+        auditLogService.log("DELETE", "FallRiskAssessment", id.toString(), "Deleted Fall Risk Assessment")
+    }
+
     // Pressure Injury
     @Transactional
     fun savePressureInjuryRisk(request: PressureInjuryRiskRequest): PressureInjuryRiskResponse {
@@ -171,6 +222,11 @@ class IndicatorService(
     @Transactional(readOnly = true)
     fun getPressureInjuryRiskByPeriod(periodId: UUID): PressureInjuryRiskResponse? {
         return pressureInjuryRepository.findByPeriodId(periodId)?.let { mapper.toResponse(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getPressureInjuryRiskBySector(sectorId: UUID): List<PressureInjuryRiskResponse> {
+        return pressureInjuryRepository.findBySectorId(sectorId).map { mapper.toResponse(it) }
     }
 
     @Transactional(readOnly = true)
@@ -199,5 +255,17 @@ class IndicatorService(
         auditLogService.log("UPDATE", "PressureInjuryRiskAssessment", saved.id.toString(), "Updated Pressure Injury Risk Assessment")
         
         return mapper.toResponse(saved)
+    }
+
+    @Transactional
+    fun deletePressureInjuryRisk(id: UUID) {
+        val indicator = pressureInjuryRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Indicator not found with id: $id") }
+            
+        periodValidator.validatePeriodIsOpen(indicator.periodId)
+        
+        pressureInjuryRepository.delete(indicator)
+        
+        auditLogService.log("DELETE", "PressureInjuryRiskAssessment", id.toString(), "Deleted Pressure Injury Risk Assessment")
     }
 }

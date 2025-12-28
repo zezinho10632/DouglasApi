@@ -8,4 +8,5 @@ import java.util.UUID
 @Repository
 interface HandHygieneAssessmentRepository : JpaRepository<HandHygieneAssessment, UUID> {
     fun findByPeriodId(periodId: UUID): HandHygieneAssessment?
+    fun findBySectorId(sectorId: UUID): List<HandHygieneAssessment>
 }

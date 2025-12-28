@@ -61,6 +61,18 @@ class NewComplianceService(
         return mapper.toResponse(domain)
     }
 
+    @Transactional
+    fun deleteMetaCompliance(id: UUID) {
+        val domain = metaRepository.findById(id)
+            .orElseThrow { ResourceNotFoundException("MetaCompliance not found with id: $id") }
+
+        periodValidator.validatePeriodIsOpen(domain.periodId)
+        
+        metaRepository.delete(domain)
+        
+        auditLogService.log("DELETE", "MetaCompliance", id.toString(), "Deleted Meta Compliance")
+    }
+
     // Medication Compliance
     @Transactional
     fun createMedicationCompliance(request: CreateMedicationComplianceRequest): MedicationComplianceResponse {
@@ -97,5 +109,17 @@ class NewComplianceService(
     fun findMedicationComplianceByPeriodId(periodId: UUID): MedicationComplianceResponse? {
         val domain = medicationRepository.findByPeriodId(periodId) ?: return null
         return mapper.toResponse(domain)
+    }
+
+    @Transactional
+    fun deleteMedicationCompliance(id: UUID) {
+        val domain = medicationRepository.findById(id)
+            .orElseThrow { ResourceNotFoundException("MedicationCompliance not found with id: $id") }
+
+        periodValidator.validatePeriodIsOpen(domain.periodId)
+        
+        medicationRepository.delete(domain)
+        
+        auditLogService.log("DELETE", "MedicationCompliance", id.toString(), "Deleted Medication Compliance")
     }
 }

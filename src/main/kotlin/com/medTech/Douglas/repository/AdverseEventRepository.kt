@@ -10,6 +10,7 @@ import java.util.UUID
 @Repository
 interface AdverseEventRepository : JpaRepository<AdverseEvent, UUID> {
     fun findByPeriodId(periodId: UUID): List<AdverseEvent>
+    fun findBySectorId(sectorId: UUID): List<AdverseEvent>
     fun findByPeriodIdAndSectorId(periodId: UUID, sectorId: UUID): List<AdverseEvent>
     fun findByPeriodIdAndSectorIdAndEventDateBetween(periodId: UUID, sectorId: UUID, startDate: java.time.LocalDate, endDate: java.time.LocalDate): List<AdverseEvent>
     fun findByEventDateBetween(startDate: java.time.LocalDate, endDate: java.time.LocalDate): List<AdverseEvent>

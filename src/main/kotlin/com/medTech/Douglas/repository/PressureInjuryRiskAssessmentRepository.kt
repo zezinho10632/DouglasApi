@@ -8,4 +8,5 @@ import java.util.UUID
 @Repository
 interface PressureInjuryRiskAssessmentRepository : JpaRepository<PressureInjuryRiskAssessment, UUID> {
     fun findByPeriodId(periodId: UUID): PressureInjuryRiskAssessment?
+    fun findBySectorId(sectorId: UUID): List<PressureInjuryRiskAssessment>
 }

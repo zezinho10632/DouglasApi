@@ -25,7 +25,6 @@ class DataInitializer(
     private val pressureInjuryRepository: PressureInjuryRiskAssessmentRepository,
     private val notificationRepository: NotificationRepository,
     private val classificationRepository: NotificationClassificationRepository,
-    private val categoryRepository: NotificationCategoryRepository,
     private val professionalCategoryRepository: ProfessionalCategoryRepository,
     private val selfNotificationRepository: SelfNotificationRepository,
     private val metaRepository: MetaComplianceRepository,
@@ -223,12 +222,6 @@ class DataInitializer(
             val class2 = classificationRepository.findByName("Circunstância de Risco") 
                 ?: classificationRepository.save(NotificationClassification(name = "Circunstância de Risco"))
 
-            // Create Categories
-            val cat1 = categoryRepository.findByName("Falha na assistência de enfermagem") 
-                ?: categoryRepository.save(NotificationCategory(name = "Falha na assistência de enfermagem"))
-            val cat2 = categoryRepository.findByName("Lesão por pressão") 
-                ?: categoryRepository.save(NotificationCategory(name = "Lesão por pressão"))
-            
             // Create Professional Categories
             val prof1 = professionalCategoryRepository.findByName("Enfermeiro")
                 ?: professionalCategoryRepository.save(ProfessionalCategory(name = "Enfermeiro"))
@@ -240,11 +233,12 @@ class DataInitializer(
                 periodId = periodId,
                 sectorId = sectorId,
                 classification = class1,
-                category = cat1,
+                description = "Falha na assistência de enfermagem",
                 professionalCategory = prof1,
                 quantityClassification = 51,
                 quantityCategory = 51,
                 quantityProfessional = 10,
+                quantity = 51,
                 createdBy = adminUser?.id
             )
             notificationRepository.save(notif1)
@@ -254,11 +248,12 @@ class DataInitializer(
                 periodId = periodId,
                 sectorId = sectorId,
                 classification = class2,
-                category = cat2,
+                description = "Lesão por pressão",
                 professionalCategory = prof2,
                 quantityClassification = 23,
                 quantityCategory = 23,
                 quantityProfessional = 5,
+                quantity = 23,
                 createdBy = adminUser?.id
             )
             notificationRepository.save(notif2)

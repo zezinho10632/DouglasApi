@@ -17,16 +17,21 @@ class Notification(
     val sectorId: UUID,
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "classification_id", nullable = false)
-    var classification: NotificationClassification,
+    @JoinColumn(name = "classification_id", nullable = true)
+    var classification: NotificationClassification? = null,
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id", nullable = false)
-    var category: NotificationCategory,
+    @Column(name = "classification_text", nullable = true)
+    var classificationText: String? = null,
+
+    @Column(nullable = false)
+    var description: String,
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "professional_category_id", nullable = true)
     var professionalCategory: ProfessionalCategory? = null,
+
+    @Column(name = "professional_category_text", nullable = true)
+    var professionalCategoryText: String? = null,
 
     @Column(name = "quantity_classification", nullable = false)
     var quantityClassification: Int,
@@ -36,6 +41,9 @@ class Notification(
 
     @Column(name = "quantity_professional", nullable = false)
     var quantityProfessional: Int,
+
+    @Column(name = "quantity", nullable = false)
+    var quantity: Int,
 
     @Column(name = "created_by")
     var createdBy: UUID? = null,

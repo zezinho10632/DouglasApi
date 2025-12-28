@@ -8,4 +8,5 @@ import java.util.UUID
 @Repository
 interface ComplianceIndicatorRepository : JpaRepository<ComplianceIndicator, UUID> {
     fun findByPeriodId(periodId: UUID): ComplianceIndicator?
+    fun findBySectorId(sectorId: UUID): List<ComplianceIndicator>
 }

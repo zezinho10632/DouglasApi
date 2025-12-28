@@ -26,7 +26,12 @@ class IndicatorController(
 
     // Compliance
     @PostMapping("/compliance")
-    @Operation(summary = "Salvar indicador de conformidade")
+    @Operation(summary = "Salvar indicador de conformidade", description = "Cria um novo indicador de conformidade.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "201", description = "Indicador criado com sucesso"),
+        SwaggerApiResponse(responseCode = "400", description = "Dados inválidos"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun saveCompliance(@RequestBody request: ComplianceIndicatorRequest): ResponseEntity<ApiResponse<ComplianceIndicatorResponse>> {
         val response = indicatorService.saveCompliance(request)
@@ -35,17 +40,42 @@ class IndicatorController(
     }
 
     @PutMapping("/compliance/{id}")
-    @Operation(summary = "Atualizar indicador de conformidade")
+    @Operation(summary = "Atualizar indicador de conformidade", description = "Atualiza um indicador de conformidade existente.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Indicador atualizado com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Indicador não encontrado"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun updateCompliance(@PathVariable id: UUID, @RequestBody request: ComplianceIndicatorRequest): ResponseEntity<ApiResponse<ComplianceIndicatorResponse>> {
         val response = indicatorService.updateCompliance(id, request)
         return ResponseEntity.ok(ApiResponse.success(response, "Indicador de conformidade atualizado com sucesso"))
     }
 
+    @DeleteMapping("/compliance/{id}")
+    @Operation(summary = "Deletar indicador de conformidade", description = "Remove permanentemente um indicador de conformidade.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Indicador deletado com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Indicador não encontrado"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun deleteCompliance(@PathVariable id: UUID): ResponseEntity<ApiResponse<Unit>> {
+        indicatorService.deleteCompliance(id)
+        return ResponseEntity.ok(ApiResponse.success(null, "Indicador de conformidade deletado com sucesso"))
+    }
+
     @GetMapping("/compliance/period/{periodId}")
     @Operation(summary = "Buscar indicador de conformidade por período")
     fun getCompliance(@PathVariable periodId: UUID): ResponseEntity<ApiResponse<ComplianceIndicatorResponse?>> {
         val response = indicatorService.getComplianceByPeriod(periodId)
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    @GetMapping("/compliance/sector/{sectorId}")
+    @Operation(summary = "Buscar indicadores de conformidade por setor")
+    fun getComplianceBySector(@PathVariable sectorId: UUID): ResponseEntity<ApiResponse<List<ComplianceIndicatorResponse>>> {
+        val response = indicatorService.getComplianceBySector(sectorId)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
@@ -58,7 +88,12 @@ class IndicatorController(
 
     // Hand Hygiene
     @PostMapping("/hand-hygiene")
-    @Operation(summary = "Salvar avaliação de higiene das mãos")
+    @Operation(summary = "Salvar avaliação de higiene das mãos", description = "Cria uma nova avaliação de higiene das mãos.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "201", description = "Avaliação criada com sucesso"),
+        SwaggerApiResponse(responseCode = "400", description = "Dados inválidos"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun saveHandHygiene(@RequestBody request: HandHygieneRequest): ResponseEntity<ApiResponse<HandHygieneResponse>> {
         val response = indicatorService.saveHandHygiene(request)
@@ -67,17 +102,42 @@ class IndicatorController(
     }
 
     @PutMapping("/hand-hygiene/{id}")
-    @Operation(summary = "Atualizar avaliação de higiene das mãos")
+    @Operation(summary = "Atualizar avaliação de higiene das mãos", description = "Atualiza uma avaliação de higiene das mãos existente.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Avaliação atualizada com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Avaliação não encontrada"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun updateHandHygiene(@PathVariable id: UUID, @RequestBody request: HandHygieneRequest): ResponseEntity<ApiResponse<HandHygieneResponse>> {
         val response = indicatorService.updateHandHygiene(id, request)
         return ResponseEntity.ok(ApiResponse.success(response, "Avaliação de higiene das mãos atualizada com sucesso"))
     }
 
+    @DeleteMapping("/hand-hygiene/{id}")
+    @Operation(summary = "Deletar avaliação de higiene das mãos", description = "Remove permanentemente uma avaliação de higiene das mãos.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Avaliação deletada com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Avaliação não encontrada"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun deleteHandHygiene(@PathVariable id: UUID): ResponseEntity<ApiResponse<Unit>> {
+        indicatorService.deleteHandHygiene(id)
+        return ResponseEntity.ok(ApiResponse.success(null, "Avaliação de higiene das mãos deletada com sucesso"))
+    }
+
     @GetMapping("/hand-hygiene/period/{periodId}")
     @Operation(summary = "Buscar avaliação de higiene das mãos por período")
     fun getHandHygiene(@PathVariable periodId: UUID): ResponseEntity<ApiResponse<HandHygieneResponse?>> {
         val response = indicatorService.getHandHygieneByPeriod(periodId)
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    @GetMapping("/hand-hygiene/sector/{sectorId}")
+    @Operation(summary = "Buscar avaliações de higiene das mãos por setor")
+    fun getHandHygieneBySector(@PathVariable sectorId: UUID): ResponseEntity<ApiResponse<List<HandHygieneResponse>>> {
+        val response = indicatorService.getHandHygieneBySector(sectorId)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
@@ -90,7 +150,12 @@ class IndicatorController(
 
     // Fall Risk
     @PostMapping("/fall-risk")
-    @Operation(summary = "Salvar avaliação de risco de queda")
+    @Operation(summary = "Salvar avaliação de risco de queda", description = "Cria uma nova avaliação de risco de queda.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "201", description = "Avaliação criada com sucesso"),
+        SwaggerApiResponse(responseCode = "400", description = "Dados inválidos"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun saveFallRisk(@RequestBody request: FallRiskRequest): ResponseEntity<ApiResponse<FallRiskResponse>> {
         val response = indicatorService.saveFallRisk(request)
@@ -99,17 +164,42 @@ class IndicatorController(
     }
 
     @PutMapping("/fall-risk/{id}")
-    @Operation(summary = "Atualizar avaliação de risco de queda")
+    @Operation(summary = "Atualizar avaliação de risco de queda", description = "Atualiza uma avaliação de risco de queda existente.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Avaliação atualizada com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Avaliação não encontrada"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun updateFallRisk(@PathVariable id: UUID, @RequestBody request: FallRiskRequest): ResponseEntity<ApiResponse<FallRiskResponse>> {
         val response = indicatorService.updateFallRisk(id, request)
         return ResponseEntity.ok(ApiResponse.success(response, "Avaliação de risco de queda atualizada com sucesso"))
     }
 
+    @DeleteMapping("/fall-risk/{id}")
+    @Operation(summary = "Deletar avaliação de risco de queda", description = "Remove permanentemente uma avaliação de risco de queda.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Avaliação deletada com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Avaliação não encontrada"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun deleteFallRisk(@PathVariable id: UUID): ResponseEntity<ApiResponse<Unit>> {
+        indicatorService.deleteFallRisk(id)
+        return ResponseEntity.ok(ApiResponse.success(null, "Avaliação de risco de queda deletada com sucesso"))
+    }
+
     @GetMapping("/fall-risk/period/{periodId}")
     @Operation(summary = "Buscar avaliação de risco de queda por período")
     fun getFallRisk(@PathVariable periodId: UUID): ResponseEntity<ApiResponse<FallRiskResponse?>> {
         val response = indicatorService.getFallRiskByPeriod(periodId)
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    @GetMapping("/fall-risk/sector/{sectorId}")
+    @Operation(summary = "Buscar avaliações de risco de queda por setor")
+    fun getFallRiskBySector(@PathVariable sectorId: UUID): ResponseEntity<ApiResponse<List<FallRiskResponse>>> {
+        val response = indicatorService.getFallRiskBySector(sectorId)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
@@ -122,7 +212,12 @@ class IndicatorController(
 
     // Pressure Injury Risk
     @PostMapping("/pressure-injury")
-    @Operation(summary = "Salvar avaliação de risco de lesão por pressão")
+    @Operation(summary = "Salvar avaliação de risco de lesão por pressão", description = "Cria uma nova avaliação de risco de lesão por pressão.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "201", description = "Avaliação criada com sucesso"),
+        SwaggerApiResponse(responseCode = "400", description = "Dados inválidos"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun savePressureInjury(@RequestBody request: PressureInjuryRiskRequest): ResponseEntity<ApiResponse<PressureInjuryRiskResponse>> {
         val response = indicatorService.savePressureInjuryRisk(request)
@@ -131,17 +226,42 @@ class IndicatorController(
     }
 
     @PutMapping("/pressure-injury/{id}")
-    @Operation(summary = "Atualizar avaliação de risco de lesão por pressão")
+    @Operation(summary = "Atualizar avaliação de risco de lesão por pressão", description = "Atualiza uma avaliação de risco de lesão por pressão existente.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Avaliação atualizada com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Avaliação não encontrada"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     fun updatePressureInjury(@PathVariable id: UUID, @RequestBody request: PressureInjuryRiskRequest): ResponseEntity<ApiResponse<PressureInjuryRiskResponse>> {
         val response = indicatorService.updatePressureInjuryRisk(id, request)
         return ResponseEntity.ok(ApiResponse.success(response, "Avaliação de risco de lesão por pressão atualizada com sucesso"))
     }
 
+    @DeleteMapping("/pressure-injury/{id}")
+    @Operation(summary = "Deletar avaliação de risco de lesão por pressão", description = "Remove permanentemente uma avaliação de risco de lesão por pressão.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Avaliação deletada com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Avaliação não encontrada"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun deletePressureInjury(@PathVariable id: UUID): ResponseEntity<ApiResponse<Unit>> {
+        indicatorService.deletePressureInjuryRisk(id)
+        return ResponseEntity.ok(ApiResponse.success(null, "Avaliação de risco de lesão por pressão deletada com sucesso"))
+    }
+
     @GetMapping("/pressure-injury/period/{periodId}")
     @Operation(summary = "Buscar avaliação de risco de lesão por pressão por período")
     fun getPressureInjury(@PathVariable periodId: UUID): ResponseEntity<ApiResponse<PressureInjuryRiskResponse?>> {
         val response = indicatorService.getPressureInjuryRiskByPeriod(periodId)
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    @GetMapping("/pressure-injury/sector/{sectorId}")
+    @Operation(summary = "Buscar avaliações de risco de lesão por pressão por setor")
+    fun getPressureInjuryBySector(@PathVariable sectorId: UUID): ResponseEntity<ApiResponse<List<PressureInjuryRiskResponse>>> {
+        val response = indicatorService.getPressureInjuryRiskBySector(sectorId)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
@@ -181,6 +301,19 @@ class IndicatorController(
     ): ResponseEntity<ApiResponse<MetaComplianceResponse>> {
         val response = newComplianceService.updateMetaCompliance(id, request)
         return ResponseEntity.ok(ApiResponse.success(response, "Indicador atualizado com sucesso"))
+    }
+
+    @DeleteMapping("/meta-compliance/{id}")
+    @Operation(summary = "Deletar indicador de meta de identificação", description = "Remove permanentemente um indicador de meta de identificação.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Indicador deletado com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Indicador não encontrado"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun deleteMeta(@PathVariable id: UUID): ResponseEntity<ApiResponse<Unit>> {
+        newComplianceService.deleteMetaCompliance(id)
+        return ResponseEntity.ok(ApiResponse.success(null, "Indicador deletado com sucesso"))
     }
 
     @GetMapping("/meta-compliance/period/{periodId}")
@@ -226,6 +359,19 @@ class IndicatorController(
     ): ResponseEntity<ApiResponse<MedicationComplianceResponse>> {
         val response = newComplianceService.updateMedicationCompliance(id, request)
         return ResponseEntity.ok(ApiResponse.success(response, "Indicador atualizado com sucesso"))
+    }
+
+    @DeleteMapping("/medication-compliance/{id}")
+    @Operation(summary = "Deletar indicador de conformidade de medicamentos", description = "Remove permanentemente um indicador de conformidade de medicamentos.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Indicador deletado com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Indicador não encontrado"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun deleteMedication(@PathVariable id: UUID): ResponseEntity<ApiResponse<Unit>> {
+        newComplianceService.deleteMedicationCompliance(id)
+        return ResponseEntity.ok(ApiResponse.success(null, "Indicador deletado com sucesso"))
     }
 
     @GetMapping("/medication-compliance/period/{periodId}")

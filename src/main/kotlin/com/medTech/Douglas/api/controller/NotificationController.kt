@@ -53,6 +53,22 @@ class NotificationController(
         return ResponseEntity.ok(ApiResponse.success(response, "Notificação atualizada com sucesso"))
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Deletar uma notificação", description = "Remove permanentemente uma notificação.")
+    @ApiResponses(value = [
+        SwaggerApiResponse(responseCode = "200", description = "Notificação deletada com sucesso"),
+        SwaggerApiResponse(responseCode = "404", description = "Notificação não encontrada"),
+        SwaggerApiResponse(responseCode = "409", description = "Período fechado")
+    ])
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    fun delete(
+        @Parameter(description = "ID da notificação", required = true)
+        @PathVariable id: UUID
+    ): ResponseEntity<ApiResponse<Unit>> {
+        notificationService.delete(id)
+        return ResponseEntity.ok(ApiResponse.success(null, "Notificação deletada com sucesso"))
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar notificação por ID", description = "Retorna os detalhes de uma notificação específica.")
     @ApiResponses(value = [
@@ -68,22 +84,44 @@ class NotificationController(
     }
 
     @GetMapping
-    @Operation(summary = "Listar notificações por período com filtros opcionais", description = "Lista notificações filtradas por período, classificação e categoria.")
+    @Operation(summary = "Listar notificações", description = "Lista notificações filtradas por período (com filtro opcional de classificação) ou por setor.")
     @ApiResponses(value = [
-        SwaggerApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+        SwaggerApiResponse(responseCode = "200", description = "Lista retornada com sucesso"),
+        SwaggerApiResponse(responseCode = "400", description = "Parâmetros inválidos (deve fornecer periodId ou sectorId)")
     ])
     @PreAuthorize("hasRole('ADMIN')")
-    fun listByPeriod(
-        @Parameter(description = "ID do período", required = true)
-        @RequestParam periodId: UUID,
+    fun list(
+        @Parameter(description = "ID do período (Obrigatório se sectorId não informado)", required = false)
+        @RequestParam(required = false) periodId: UUID?,
 
-        @Parameter(description = "ID da Classificação", required = false)
-        @RequestParam(required = false) classificationId: UUID?,
+        @Parameter(description = "ID do setor (Obrigatório se periodId não informado)", required = false)
+        @RequestParam(required = false) sectorId: UUID?,
 
-        @Parameter(description = "ID da Categoria", required = false)
-        @RequestParam(required = false) categoryId: UUID?
+        @Parameter(description = "ID da Classificação (apenas para filtro por período)", required = false)
+        @RequestParam(required = false) classificationId: UUID?
     ): ResponseEntity<ApiResponse<List<NotificationResponse>>> {
-        val response = notificationService.listByPeriod(periodId, classificationId, categoryId)
+        if (periodId != null) {
+            val response = notificationService.listByPeriod(periodId, classificationId)
+            return ResponseEntity.ok(ApiResponse.success(response))
+        } else if (sectorId != null) {
+            val response = notificationService.listBySector(sectorId)
+            return ResponseEntity.ok(ApiResponse.success(response))
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Deve fornecer periodId ou sectorId"))
+        }
+    }
+
+    @GetMapping("/ranking/professional-category")
+    @Operation(summary = "Ranking de categorias profissionais", description = "Retorna um ranking de categorias profissionais com base na quantidade de notificações. Pode ser filtrado por período ou setor.")
+    @PreAuthorize("hasRole('ADMIN')")
+    fun getRanking(
+        @Parameter(description = "ID do período", required = false)
+        @RequestParam(required = false) periodId: UUID?,
+
+        @Parameter(description = "ID do setor", required = false)
+        @RequestParam(required = false) sectorId: UUID?
+    ): ResponseEntity<ApiResponse<List<com.medTech.Douglas.api.dto.notification.ProfessionalCategoryRankingResponse>>> {
+        val response = notificationService.getProfessionalCategoryRanking(periodId, sectorId)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 }

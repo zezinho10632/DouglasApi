@@ -4,7 +4,6 @@ import com.medTech.Douglas.api.dto.notification.CreateNotificationRequest
 import com.medTech.Douglas.api.dto.notification.NotificationResponse
 import com.medTech.Douglas.api.dto.notification.UpdateNotificationRequest
 import com.medTech.Douglas.exception.ResourceNotFoundException
-import com.medTech.Douglas.repository.NotificationCategoryRepository
 import com.medTech.Douglas.repository.NotificationClassificationRepository
 import com.medTech.Douglas.repository.NotificationRepository
 import com.medTech.Douglas.repository.ProfessionalCategoryRepository
@@ -21,7 +20,6 @@ class NotificationService(
     private val repository: NotificationRepository,
     private val userRepository: UserRepository,
     private val classificationRepository: NotificationClassificationRepository,
-    private val categoryRepository: NotificationCategoryRepository,
     private val professionalCategoryRepository: ProfessionalCategoryRepository,
     private val periodValidator: PeriodValidator,
     private val auditLogService: AuditLogService,
@@ -42,8 +40,14 @@ class NotificationService(
     }
 
     @Transactional(readOnly = true)
-    fun listByPeriod(periodId: UUID, classificationId: UUID? = null, categoryId: UUID? = null): List<NotificationResponse> {
-        val notifications = repository.search(periodId, classificationId, categoryId)
+    fun listByPeriod(periodId: UUID, classificationId: UUID? = null): List<NotificationResponse> {
+        val notifications = repository.search(periodId, classificationId)
+        return notifications.map { mapper.toResponse(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun listBySector(sectorId: UUID): List<NotificationResponse> {
+        val notifications = repository.findBySectorId(sectorId)
         return notifications.map { mapper.toResponse(it) }
     }
 
@@ -54,10 +58,10 @@ class NotificationService(
 
         periodValidator.validatePeriodIsOpen(notification.periodId)
 
-        val classification = classificationRepository.findById(request.classificationId)
-            .orElseThrow { ResourceNotFoundException("Classification not found") }
-        val category = categoryRepository.findById(request.categoryId)
-            .orElseThrow { ResourceNotFoundException("Category not found") }
+        val classification = request.classificationId?.let {
+            classificationRepository.findById(it)
+                .orElseThrow { ResourceNotFoundException("Classification not found") }
+        }
         
         val professionalCategory = request.professionalCategoryId?.let {
             professionalCategoryRepository.findById(it)
@@ -65,11 +69,14 @@ class NotificationService(
         }
 
         notification.classification = classification
-        notification.category = category
+        notification.classificationText = request.classificationText
+        notification.description = request.description
         notification.professionalCategory = professionalCategory
+        notification.professionalCategoryText = request.professionalCategoryText
         notification.quantityClassification = request.quantityClassification
         notification.quantityCategory = request.quantityCategory
         notification.quantityProfessional = request.quantityProfessional
+        notification.quantity = request.quantity
         notification.updatedAt = java.time.LocalDateTime.now()
 
         val saved = repository.save(notification)
@@ -79,11 +86,28 @@ class NotificationService(
         return mapper.toResponse(saved)
     }
 
+    @Transactional
+    fun delete(id: UUID) {
+        val notification = repository.findById(id)
+            .orElseThrow { ResourceNotFoundException("Notification not found with id: $id") }
+        
+        periodValidator.validatePeriodIsOpen(notification.periodId)
+        
+        repository.delete(notification)
+        
+        auditLogService.log("DELETE", "Notification", id.toString(), "Deleted Notification")
+    }
+
     @Transactional(readOnly = true)
     fun findById(id: UUID): NotificationResponse {
         val notification = repository.findById(id)
             .orElseThrow { ResourceNotFoundException("Notification not found with id: $id") }
         
         return mapper.toResponse(notification)
+    }
+
+    @Transactional(readOnly = true)
+    fun getProfessionalCategoryRanking(periodId: UUID?, sectorId: UUID?): List<com.medTech.Douglas.api.dto.notification.ProfessionalCategoryRankingResponse> {
+        return repository.getProfessionalCategoryRanking(periodId, sectorId)
     }
 }

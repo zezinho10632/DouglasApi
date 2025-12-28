@@ -63,7 +63,7 @@ class AdverseEventController(
     }
 
     @GetMapping("/period/{periodId}")
-    @Operation(summary = "Listar eventos adversos por período com filtros opcionais", description = "Lista eventos adversos de um período, podendo filtrar pelo tipo do evento.")
+    @Operation(summary = "Listar eventos adversos por período", description = "Lista eventos adversos de um período, podendo filtrar pelo tipo do evento.")
     @PreAuthorize("hasRole('ADMIN')")
     fun listByPeriod(
         @Parameter(description = "ID do período", required = true)
@@ -73,6 +73,17 @@ class AdverseEventController(
         @RequestParam(required = false) eventType: EventType?
     ): ResponseEntity<ApiResponse<List<AdverseEventResponse>>> {
         val response = adverseEventService.listByPeriod(periodId, eventType)
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    @GetMapping("/sector/{sectorId}")
+    @Operation(summary = "Listar eventos adversos por setor", description = "Lista todos os eventos adversos de um setor.")
+    @PreAuthorize("hasRole('ADMIN')")
+    fun listBySector(
+        @Parameter(description = "ID do setor", required = true)
+        @PathVariable sectorId: UUID
+    ): ResponseEntity<ApiResponse<List<AdverseEventResponse>>> {
+        val response = adverseEventService.listBySector(sectorId)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 

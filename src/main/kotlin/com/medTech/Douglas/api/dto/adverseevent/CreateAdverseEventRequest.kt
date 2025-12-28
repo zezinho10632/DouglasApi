@@ -7,5 +7,7 @@ data class CreateAdverseEventRequest(
     val sectorId: String,
     val eventDate: LocalDate,
     val eventType: String,
-    val description: String
+    val description: String,
+    val quantityCases: Int,
+    val quantityNotifications: Int
 )

@@ -28,6 +28,12 @@ class AdverseEvent(
     @Column(nullable = false, columnDefinition = "TEXT")
     var description: String,
 
+    @Column(name = "quantity_cases", nullable = false)
+    var quantityCases: Int = 1,
+
+    @Column(name = "quantity_notifications", nullable = false)
+    var quantityNotifications: Int = 0,
+
     @Column(name = "was_notified", nullable = false)
     var wasNotified: Boolean = false,
 
@@ -48,11 +54,15 @@ class AdverseEvent(
     fun update(
         eventDate: LocalDate,
         eventType: EventType,
-        description: String
+        description: String,
+        quantityCases: Int,
+        quantityNotifications: Int
     ) {
         this.eventDate = eventDate
         this.eventType = eventType
         this.description = description
+        this.quantityCases = quantityCases
+        this.quantityNotifications = quantityNotifications
         this.updatedAt = LocalDateTime.now()
     }
 }

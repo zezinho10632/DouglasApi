@@ -11,6 +11,8 @@ data class AdverseEventResponse(
     val eventDate: LocalDate,
     val eventType: String,
     val description: String,
+    val quantityCases: Int,
+    val quantityNotifications: Int,
     val createdByName: String? = null,
     val createdByJobTitle: JobTitle? = null,
     val createdAt: LocalDateTime,

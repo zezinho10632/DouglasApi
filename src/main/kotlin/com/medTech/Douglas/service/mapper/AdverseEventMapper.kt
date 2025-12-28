@@ -19,6 +19,8 @@ class AdverseEventMapper(
             eventDate = request.eventDate,
             eventType = EventType.valueOf(request.eventType),
             description = request.description,
+            quantityCases = request.quantityCases,
+            quantityNotifications = request.quantityNotifications,
             createdBy = userId
         )
     }
@@ -36,6 +38,8 @@ class AdverseEventMapper(
             eventDate = domain.eventDate,
             eventType = domain.eventType.name,
             description = domain.description,
+            quantityCases = domain.quantityCases,
+            quantityNotifications = domain.quantityNotifications,
             createdByName = user?.name,
             createdByJobTitle = user?.jobTitle,
             createdAt = domain.createdAt,

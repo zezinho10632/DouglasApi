@@ -91,7 +91,8 @@ def setup_data():
     res = session.post(f"{BASE_URL}/adverse-events", json={
         "periodId": period_id, "sectorId": sector_id, 
         "eventDate": datetime.date.today().isoformat(), 
-        "eventType": "FALL", "description": "Filter Test AE"
+        "eventType": "FALL", "description": "Filter Test AE",
+        "quantityCases": 1, "quantityNotifications": 0
     })
     check(res, [201], "Create Adverse Event")
     

@@ -67,7 +67,9 @@ class AdverseEventService(
         adverseEvent.update(
             eventDate = request.eventDate,
             eventType = EventType.valueOf(request.eventType),
-            description = request.description
+            description = request.description,
+            quantityCases = request.quantityCases,
+            quantityNotifications = request.quantityNotifications
         )
 
         val saved = repository.save(adverseEvent)

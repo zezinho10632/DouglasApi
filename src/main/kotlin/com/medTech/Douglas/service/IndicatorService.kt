@@ -244,6 +244,7 @@ class IndicatorService(
         indicator.update(
             totalPatients = request.totalPatients,
             assessedOnAdmission = request.assessedOnAdmission,
+            veryHigh = request.veryHigh,
             highRisk = request.highRisk,
             mediumRisk = request.mediumRisk,
             lowRisk = request.lowRisk,

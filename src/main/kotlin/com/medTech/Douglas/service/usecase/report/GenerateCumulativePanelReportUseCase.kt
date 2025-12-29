@@ -247,6 +247,7 @@ class GenerateCumulativePanelReportUseCase(
 
         val total = assessments.sumOf { it.totalPatients }
         val assessed = assessments.sumOf { it.assessedOnAdmission }
+        val veryHigh = assessments.sumOf { it.veryHigh }
         val high = assessments.sumOf { it.highRisk }
         val medium = assessments.sumOf { it.mediumRisk }
         val low = assessments.sumOf { it.lowRisk }
@@ -264,10 +265,12 @@ class GenerateCumulativePanelReportUseCase(
             totalPatients = total,
             assessedOnAdmission = assessed,
             assessmentPercentage = calcPerc(assessed, total),
+            veryHigh = veryHigh,
             highRisk = high,
             mediumRisk = medium,
             lowRisk = low,
             notAssessed = notAssessed,
+            veryHighPercentage = calcPerc(veryHigh, total),
             highRiskPercentage = calcPerc(high, total),
             mediumRiskPercentage = calcPerc(medium, total),
             lowRiskPercentage = calcPerc(low, total),

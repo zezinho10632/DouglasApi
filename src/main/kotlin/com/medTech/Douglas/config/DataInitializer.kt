@@ -203,6 +203,7 @@ class DataInitializer(
                 sectorId = sectorId,
                 totalPatients = 100,
                 assessedOnAdmission = 95,
+                veryHigh = 0,
                 highRisk = 5,
                 mediumRisk = 15,
                 lowRisk = 75,

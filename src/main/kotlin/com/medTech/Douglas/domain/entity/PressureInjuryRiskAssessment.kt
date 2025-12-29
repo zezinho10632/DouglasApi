@@ -27,6 +27,9 @@ class PressureInjuryRiskAssessment(
     @Column(name = "assessment_percentage", nullable = false)
     var assessmentPercentage: BigDecimal,
 
+    @Column(name = "very_high", nullable = false)
+    var veryHigh: Int = 0,
+
     @Column(name = "high_risk", nullable = false)
     var highRisk: Int = 0,
 
@@ -38,6 +41,9 @@ class PressureInjuryRiskAssessment(
 
     @Column(name = "not_assessed", nullable = false)
     var notAssessed: Int = 0,
+
+    @Column(name = "very_high_percentage", nullable = false)
+    var veryHighPercentage: BigDecimal = BigDecimal.ZERO,
 
     @Column(name = "high_risk_percentage", nullable = false)
     var highRiskPercentage: BigDecimal = BigDecimal.ZERO,
@@ -60,6 +66,7 @@ class PressureInjuryRiskAssessment(
     fun update(
         totalPatients: Int,
         assessedOnAdmission: Int,
+        veryHigh: Int,
         highRisk: Int,
         mediumRisk: Int,
         lowRisk: Int,
@@ -69,11 +76,13 @@ class PressureInjuryRiskAssessment(
         this.assessedOnAdmission = assessedOnAdmission
         this.assessmentPercentage = calculatePercentage(totalPatients, assessedOnAdmission)
         
+        this.veryHigh = veryHigh
         this.highRisk = highRisk
         this.mediumRisk = mediumRisk
         this.lowRisk = lowRisk
         this.notAssessed = notAssessed
         
+        this.veryHighPercentage = calculatePercentage(totalPatients, veryHigh)
         this.highRiskPercentage = calculatePercentage(totalPatients, highRisk)
         this.mediumRiskPercentage = calculatePercentage(totalPatients, mediumRisk)
         this.lowRiskPercentage = calculatePercentage(totalPatients, lowRisk)
@@ -95,6 +104,7 @@ class PressureInjuryRiskAssessment(
             sectorId: UUID,
             totalPatients: Int,
             assessedOnAdmission: Int,
+            veryHigh: Int,
             highRisk: Int,
             mediumRisk: Int,
             lowRisk: Int,
@@ -106,6 +116,7 @@ class PressureInjuryRiskAssessment(
                 totalPatients = totalPatients,
                 assessedOnAdmission = assessedOnAdmission,
                 assessmentPercentage = BigDecimal.ZERO, // Placeholder
+                veryHigh = veryHigh,
                 highRisk = highRisk,
                 mediumRisk = mediumRisk,
                 lowRisk = lowRisk,
@@ -116,6 +127,7 @@ class PressureInjuryRiskAssessment(
             assessment.update(
                 totalPatients,
                 assessedOnAdmission,
+                veryHigh,
                 highRisk,
                 mediumRisk,
                 lowRisk,

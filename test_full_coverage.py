@@ -270,6 +270,7 @@ def test_indicators():
     data_pi = {
         "periodId": period_id, "sectorId": sector_id, 
         "totalPatients": 100, "assessedOnAdmission": 95, 
+        "veryHigh": 0,
         "highRisk": 5, "mediumRisk": 20, "lowRisk": 70, "notAssessed": 5
     }
     res = session.post(f"{BASE_URL}/indicators/pressure-injury", json=data_pi)

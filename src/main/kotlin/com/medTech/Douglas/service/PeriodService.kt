@@ -21,11 +21,6 @@ class PeriodService(
     fun create(request: CreatePeriodRequest): PeriodResponse {
         val sectorId = UUID.fromString(request.sectorId)
         
-        // Check if there is already an open period for this sector
-        if (repository.findBySectorIdAndStatus(sectorId, PeriodStatus.OPEN).isPresent) {
-            throw BusinessRuleException("There is already an open period for this sector")
-        }
-
         // Check if period for this month/year already exists
         if (repository.existsBySectorIdAndMonthAndYear(sectorId, request.month, request.year)) {
              throw BusinessRuleException("Period for this month and year already exists")
